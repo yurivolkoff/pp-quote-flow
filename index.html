@@ -162,6 +162,12 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
 .swatch-name{font-size:14px;color:var(--body);margin-top:8px}
 
 /* --- production price-tier table (library) with the captured orange selection box --- */
+/* min-width:0 + its own BFC keeps the table's min-content out of the grid track,
+   so the tier rail scrolls instead of widening the page */
+.tier-rail{position:relative;overflow:hidden;min-width:0}
+.tier-rail.scrollable::after{content:"";position:absolute;top:0;right:0;bottom:0;width:40px;pointer-events:none;
+  background:linear-gradient(to right,rgba(255,255,255,0),#fff 72%);transition:opacity .15s}
+.tier-rail.at-end::after{opacity:0}
 .tier-wrap{overflow-x:auto}
 .tier{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}
 .tier th{text-align:left;font-weight:400;color:var(--body);padding:6px 10px 6px 0;white-space:nowrap;font-size:13.5px}
@@ -192,6 +198,9 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
    V1 — PDP
    ============================================================ */
 .pdp-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:24px 0 48px;align-items:start}
+/* a grid item's automatic minimum is min-content, and the tier table's min-content is
+   wider than a phone. Zeroing it lets the track shrink and the tier rail scroll instead. */
+.pdp-grid > *,.q-grid > *{min-width:0}
 .pdp-gallery{border:1px solid var(--rule);border-radius:6px;background:#fff;padding:28px;display:flex;align-items:center;justify-content:center;min-height:420px}
 .sku{font-size:13px;color:var(--helper);margin-bottom:6px}
 .pdp-h1{font-size:24px;line-height:32px;font-weight:700;color:var(--ink);margin-bottom:10px}
@@ -675,7 +684,7 @@ table.items tr.softrow td{color:var(--body)}
 
       <div class="pdp-sec">
         <div class="step-h"><span class="num">2</span> Quantity</div>
-        <div class="tier-wrap"><table class="tier" id="pdpTier" aria-label="Price per unit by quantity. Choose a quantity by activating a column."></table></div>
+        <div class="tier-rail"><div class="tier-wrap"><table class="tier" id="pdpTier" aria-label="Price per unit by quantity. Choose a quantity by activating a column."></table></div></div>
         <div class="qty-row">
           <div><label class="lbl" for="pdpQty">Quantity</label><input type="number" id="pdpQty" value="250" min="100" step="1"></div>
           <div><label class="lbl" for="pdpUnit">Unit price</label><input type="text" id="pdpUnit" value="$2.18" readonly></div>
@@ -685,7 +694,7 @@ table.items tr.softrow td{color:var(--body)}
       <div class="pdp-sec">
         <div class="step-h"><span class="num">3</span> Decoration Method</div>
         <p style="font-size:14.5px">Decoration method: <b style="color:var(--ink)" id="pdpMethod">Pad Printed</b> &middot; <span id="pdpLoc">Back</span> &middot; <span id="pdpColors">2 Colors</span></p>
-        <p class="note" id="pdpDecNote">One-time setup charge: $60.00 per location. Second imprint color adds $0.35 per piece.</p>
+        <p class="note" id="pdpDecNote">Imprint Method Setup: $60.00 per location. Each imprint color past the first adds $0.35 per piece.</p>
         <div id="pdpPmsHost"></div>
       </div>
 
@@ -839,10 +848,10 @@ table.items tr.softrow td{color:var(--body)}
           <p class="note">Color and imprint colors are changed on the product page</p>
         </div>
 
-        <!-- QUANTITY — production tier table + inline Quantity / Unit Price fields -->
+        <!-- QUANTITY — production tier table + inline Quantity / Price each fields -->
         <div class="d-sec">
           <h3 class="step-bar"><span class="n">2</span> Quantity</h3>
-          <div class="tier-wrap"><table class="tier" id="dTier" aria-label="Price per unit by quantity. Choose a quantity by activating a column."></table></div>
+          <div class="tier-rail"><div class="tier-wrap"><table class="tier" id="dTier" aria-label="Price per unit by quantity. Choose a quantity by activating a column."></table></div></div>
           <div class="inline-pair">
             <div class="field" style="margin:0" id="dQtyField">
               <div class="inline-field"><label class="k" for="dQty">Quantity:</label><input type="text" id="dQty" inputmode="numeric" value="250"></div>
@@ -850,10 +859,10 @@ table.items tr.softrow td{color:var(--body)}
               <p class="note">Order as few as 100</p>
             </div>
             <div>
-              <div class="inline-field ro"><span class="k">Unit Price:</span><span class="v" id="dUnit">$2.18</span>
-                <span class="tipwrap" style="margin-left:auto"><button class="tipbtn" aria-label="How the unit price is set">
+              <div class="inline-field ro"><span class="k">Price each:</span><span class="v" id="dUnit">$2.18</span>
+                <span class="tipwrap" style="margin-left:auto"><button class="tipbtn" aria-label="How the price each is set">
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="4.8" r=".9" fill="currentColor"/></svg>
-                </button><span class="tipbox">The unit price comes from the quantity break you selected above.</span></span>
+                </button><span class="tipbox">The price each comes from the quantity break you selected above.</span></span>
               </div>
             </div>
           </div>
@@ -1426,6 +1435,7 @@ function qRate(){
   return RATES.filter(function(r){ return r.id === d.chosen; })[0];
 }
 function qTotal(){ var r = qRate(); return S.quote.cfg.sub + (r ? r.cost : 0); }
+function totalLabel(){ return qRate() ? 'Total with delivery' : 'Total Price'; }
 
 /* ============================================================
    VIEW SWITCHING + prototype chrome
@@ -1493,11 +1503,31 @@ function tierHTML(){
   });
   return '<tbody>' + minRow + '</tr>' + priceRow + '</tr></tbody>';
 }
+/* a tier table rendered while its modal was hidden measures 0, so re-cue on open */
+function refreshTierCues(){
+  var rails = document.querySelectorAll('.tier-rail');
+  for (var i=0;i<rails.length;i++){
+    var wrap = rails[i].firstElementChild;
+    var over = wrap.scrollWidth - wrap.clientWidth > 1;
+    rails[i].classList.toggle('scrollable', over);
+    rails[i].classList.toggle('at-end', over && wrap.scrollLeft >= wrap.scrollWidth - wrap.clientWidth - 1);
+  }
+}
 function wireTier(tbl, after){
   var b = tbl.querySelectorAll('button');
   for (var i=0;i<b.length;i++) b[i].addEventListener('click', function(){
     S.qty = parseInt(this.dataset.q, 10); after();
   });
+  /* the tier table scrolls inside its own rail on narrow screens; the fade says so */
+  var wrap = tbl.parentNode, rail = wrap.parentNode;
+  function cue(){
+    var over = wrap.scrollWidth - wrap.clientWidth > 1;
+    rail.classList.toggle('scrollable', over);
+    rail.classList.toggle('at-end', over && wrap.scrollLeft >= wrap.scrollWidth - wrap.clientWidth - 1);
+  }
+  if (!wrap.dataset.cued){ wrap.dataset.cued = '1'; wrap.addEventListener('scroll', cue); window.addEventListener('resize', cue); }
+  cue();
+  setTimeout(cue, 0);
 }
 function renderPDP(){
   var p = price(), m = METHODS[S.method];
@@ -1515,7 +1545,7 @@ function renderPDP(){
   $('pdpLoc').textContent = locName();
   $('pdpColors').textContent = colorsLabel();
   $('pdpDecNote').textContent = p.setup > 0
-    ? 'One-time setup charge: ' + fmt(p.setup) + ' per location.' + (m.run > 0 ? ' Each imprint color past the first adds ' + fmt(m.run) + ' per piece.' : '')
+    ? 'Imprint Method Setup: ' + fmt(p.setup) + ' per location.' + (m.run > 0 ? ' Each imprint color past the first adds ' + fmt(m.run) + ' per piece.' : '')
     : 'First imprint included, so there is no setup charge for this decoration method.';
   /* production exposes the PMS control on the PDP, not in the quote surface */
   var pmsOK = m.maxColors > 0 && !noImprint();
@@ -1817,21 +1847,28 @@ $('dSubmit').addEventListener('click', function(){ submit('D'); });
    ============================================================ */
 var openKey = null, lastFocus = null;
 function backOf(k){ return $(k === 'C' ? 'backC' : 'backD'); }
-function openModal(k){
-  lastFocus = document.activeElement;
+/* Measured, never assumed. A rotate or a resize while a modal is open must not strand
+   the offset and leave the dialog header behind the prototype's sticky bar. */
+function setChromeVars(){
   /* the prototype's sticky chrome and chip rail must not clip the dialog */
   var deck = document.querySelector('#view-pdp .chipdeck');
   var chrome = deck ? deck.getBoundingClientRect().bottom : $('protoHelp').getBoundingClientRect().bottom;
+  document.documentElement.style.setProperty('--chrome', Math.max(0, chrome) + 'px');
   /* the mobile sheet sits below the prototype's own bar, not below the chip rail */
   document.documentElement.style.setProperty('--chromebar', Math.max(0, $('protoHelp').getBoundingClientRect().bottom) + 'px');
-  document.documentElement.style.setProperty('--chrome', Math.max(0, chrome) + 'px');
+}
+window.addEventListener('resize', function(){ if (openKey) setChromeVars(); });
+window.addEventListener('orientationchange', function(){ if (openKey) setTimeout(setChromeVars, 0); });
+function openModal(k){
+  lastFocus = document.activeElement;
+  setChromeVars();
   openKey = k;
   backOf(k).classList.add('open');
   document.body.classList.add('modal-open');
   document.body.style.overflow = 'hidden';
   $(k === 'C' ? 'annC' : 'annD').classList.add('on');
   document.querySelector('#view-pdp .pdp-grid').setAttribute('aria-hidden', 'true');
-  setTimeout(function(){ $(k === 'C' ? 'cTitle' : 'dTitle').focus(); }, 30);
+  setTimeout(function(){ $(k === 'C' ? 'cTitle' : 'dTitle').focus(); refreshTierCues(); }, 30);
 }
 function closeModal(silent){
   if (!openKey) return;
@@ -1941,10 +1978,11 @@ function itemRows(labelled){
        '<td class="r"' + L('') + '>Applied at proofing</td></tr>';
   h += '<tr class="sub"><td class="item" colspan="3">Subtotal with Setup Fee</td><td class="r"' + L('') + '>' + fmt(c.sub) + '</td></tr>';
   h += r
-    ? '<tr class="softrow"><td class="item" colspan="3">' + r.name + ' &middot; Arrives by ' + r.arrives + '</td><td class="r"' + L('Shipping') + '>' + fmt(r.cost) + '</td></tr>'
+    ? '<tr class="softrow"><td class="item" colspan="3">Delivery<span class="m">' + r.name + ' &middot; Arrives by ' + r.arrives + '</span></td><td class="r"' + L('Delivery') + '>' + fmt(r.cost) + '</td></tr>'
     : '<tr class="softrow"><td class="item" colspan="3">Shipping</td><td class="r"' + L('Shipping') + '>Calculated at checkout</td></tr>';
   h += '<tr class="softrow"><td class="item" colspan="3">Sales tax</td><td class="r"' + L('') + '>Added at checkout where applicable</td></tr>';
-  h += '<tr class="tot"><td class="item" colspan="3">Total Price</td><td class="r"' + L('') + '>' + fmt(qTotal()) + '</td></tr>';
+  /* the final figure names what it includes, so "Total" never over-promises */
+  h += '<tr class="tot"><td class="item" colspan="3">' + totalLabel() + '</td><td class="r"' + L('') + '>' + fmt(qTotal()) + '</td></tr>';
   h += '<tr class="softrow"><td class="item" colspan="3">Average price per unit</td><td class="r"' + L('') + '>' + fmt(qTotal() / c.qty) + ' per unit</td></tr>';
   return h;
 }
@@ -1997,6 +2035,8 @@ function renderQuote(){
   $('qTerms').innerHTML = termsHTML();
   $('qRailTotalV').textContent = fmt(qTotal());
   $('qMobTotal').textContent = fmt(qTotal());
+  document.querySelector('#view-quote .rail-total .k').textContent = totalLabel();
+  document.querySelector('#view-quote .mobile-bar .tot').childNodes[0].nodeValue = totalLabel() + ' ';
   $('qTrust').textContent = r
     ? 'This is the complete price. Only sales tax is added at checkout.'
     : 'This is the complete price. Only shipping and sales tax are added at checkout.';
@@ -2219,7 +2259,7 @@ function renderMail(){
   rows.push(['Subtotal with Setup Fee', fmt(c.sub)]);
   rows.push(['Delivery', r ? r.name + ' · Arrives by ' + r.arrives : 'Calculated at checkout']);
   var h = rows.map(function(x){ return '<div class="r"><span class="k">' + x[0] + '</span><span class="v">' + esc(x[1]) + '</span></div>'; }).join('');
-  h += '<div class="r tot"><span class="k">Total Price</span><span class="v">' + fmt(qTotal()) + '</span></div>';
+  h += '<div class="r tot"><span class="k">' + totalLabel() + '</span><span class="v">' + fmt(qTotal()) + '</span></div>';
   h += '<div class="r"><span class="k">Average price per unit</span><span class="v">' + fmt(qTotal() / c.qty) + ' per unit</span></div>';
   h += '<div class="r"><span class="k">Valid through</span><span class="v">Oct 3, 2026</span></div>';
   $('mailSum').innerHTML = h;

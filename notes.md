@@ -95,7 +95,7 @@ The capture section in `promotionpros-pdp.md` landed after C and the quote-page 
 ## Decisions where the analysis was silent
 
 1. **C has no pinned footer.** The analysis specced a pinned footer for D only. C runs under 500px tall, so its CTA sits in flow; at 375 it lands just at the fold rather than above it, which is the one place C is slightly worse than the inline panel the analysis preferred.
-2. **One breakdown string across the flow.** Production ships both "See price breakdown" (apron) and "View Price Breakdown" (tumbler) for the same control. The flow uses `View Price Breakdown` everywhere, so C, D and the PDP agree. A Boris ask asks production to normalise.
+2. **One breakdown string across the flow.** Production ships both "See price breakdown" (apron) and "View Price Breakdown" (tumbler) for the same control. The flow uses `View Price Breakdown` everywhere, so C, D and the PDP agree. A Boris ask asks production to normalise. **Deck correction:** the R3 copy-deck delta logged `C-06` "See price breakdown" as "production string verbatim". That provenance claim is wrong — it came from the apron page, and the configurator capture shows the button reads "View Price Breakdown". The deck entry should be corrected at source.
 3. **The method card carries a one-line constraint summary** ("Up to 4 colors · 5 locations"). Production's card is name-only, because the constraints live in a Decoration & Imprint accordion that D does not have. Without it, D's clamp notices arrive unexplained.
 4. **The colour-count clamp above one colour needed a second string.** `D-21` is written for a method that prints in one colour. A method that clamps from four colours to three gets a parallel sentence in the same shape.
 5. **`No Imprint` is a real priced state.** Choosing it drops the setup and run charges to zero, sets `Imprint Colors` to `None`, and removes those lines from the breakdown, rather than quoting a decoration the buyer just declined.
@@ -154,19 +154,19 @@ Rows re-run after the R3 changes are marked **(re-run)**.
 | Rule ID | Rule | Pass/Fail | Notes |
 |---|---|---|---|
 | B-PDP010 | Primary CTA visually unique | Pass | Only Add to cart is orange/filled on the PDP; the lead row is navy outline one tier below. While a modal is open, Add to cart is behind the scrim and inert. |
-| B-PDP013 | Price per unit alongside total | Pass (re-run) | "$2.18 each" beside every total: C's total line, D's footer and subtotal box, the breakdown, the quote table, the PDF. |
+| B-PDP013 | Price per unit alongside total | Pass (re-run R4) | Production's own "Price each:" beside every summary figure — C's summary block, D's pinned footer and its inline field, the PDP buy box — plus the unit-price column in the breakdown, the quote table and the PDF. |
 | B-PDP015 | Shipping estimate available pre-checkout | Pass (re-run) | Delivery moved to the quote page but is still available before any order, with a real cost and arrival date. |
 | B-PDP017 | Free-shipping status near the buy section | N/A | No threshold exists on production. Re-test when Boris supplies a live value. |
 | B-PDP019 | Colour swatches, not drop-downs | Pass with exception (re-run) | Product colour is a 44px swatch radiogroup. Imprint location is a drop-down in D — because production itself ships a `react-select` combobox for it, with the five options reused verbatim. Reusing production's control is the instruction; inventing a swatch picker for it would be the divergence the reuse map forbids. |
 | B-PDP027 / F-PDP008 | No site-initiated overlays | Pass (re-run) | Both modals open only from the quote button. The ban covers site-initiated overlays. |
 | B-PDP038 | Buy section stays focused | Pass | The lead row adds two buttons and one helper line. |
-| B-PDP039 | Delivery dates, not speeds | Pass | "Arrives by Thu, Sep 24, 2026" everywhere. No "3–5 business days" string exists in the file. |
+| B-PDP039 | Delivery dates, not speeds | Pass (re-run R4) | "Arrives by Thu, Sep 24, 2026" everywhere, now on the sub-line of a row labelled "Delivery" rather than standing in for the label. No "3–5 business days" string exists in the file. |
 | B-PDP041 | Complex customisation not crammed pre-cart | Pass (re-run) | C is read-only. D exposes three controls, all production's own, keeps colour and imprint colors read-only with a helper naming where they change, and is user-initiated at 640px with a scrolling body — not a compressed second configurator. |
 | B-PDP042 | Single-option variations shown as text | Pass | Read-only rows in both modals and on the quote document. |
 | F-PDP004 | Price ambiguity on bulk products | Pass | Unit price, extended amount and quantity always shown together. |
 | F-PDP005 | Hidden shipping cost | Pass (re-run) | Optional but available, and the quote states which branch it took in both the trust line and the shipping row. |
 | B-CHK003 | Every shipping option's cost shown upfront | Pass | Service, cost and arrival on one row; no click-to-reveal. |
-| B-CHK005 | No new cost elements late in the flow | Pass (re-run) | Setup and run charges are itemised before any field is filled. Delivery is the only figure added later, and it is added by the buyer, announced, and stamped on the document. |
+| B-CHK005 | No new cost elements late in the flow | Pass (re-run R4) | Setup and run charges are itemised before any field is filled, under production's own labels. Delivery is the only figure added later; it is added by the buyer, announced, stamped on the document, and the final figure renames itself "Total with delivery" so the change is visible in the label, not only in the number. |
 | B-CHK008 | Enclosed header | Pass (re-run) | The quote page keeps the enclosed header. The request surface is a modal over the PDP, so the rule does not apply to it. |
 | B-CHK012 | Inline validation on blur | Pass | Validation fires on blur, never during typing. |
 | B-CHK013 | Never clear typed data | Pass (re-run) | No reset path exists; values survive closing a modal and hopping between C and D. |
@@ -182,6 +182,8 @@ Rows re-run after the R3 changes are marked **(re-run)**.
 | B-CHK030 | Primary action more prominent than secondary | Pass | Orange filled vs navy outline. |
 | B-CHK031 | Progress indicator, disabled CTA with reason | Pass (re-run) | Rate-check spinner label, and a reason line under every disabled CTA naming the next missing thing. |
 | B-CHK039 | Single-column form | Pass (re-run) | Both request surfaces ask two fields in one column. D's controls are a configurator, not a form, and stack below 960px. |
+
+**Responsive re-check (R4).** Page-level horizontal scroll at 375 is now zero on every view. It was 209px on the PDP view in R3 and R3b — a grid item's automatic minimum is `min-content`, and the tier table's min-content is wider than a phone, so the single-column track was 564px inside a 343px container. Neither review caught it; the UI review checked the tier table's own overflow and found it scrolling correctly, which it was, inside an over-wide track.
 
 **P1 violations: none open.** B-PDP017 is the only P1 not satisfied and is not satisfiable — the feature it describes does not exist on production. B-PDP019 carries a documented exception, sourced to production's own control.
 
@@ -256,6 +258,8 @@ New in R3:
 | Where | Final text |
 |---|---|
 | Quote page, first-arrival banner | Your quote is ready. We emailed a copy with the PDF to dana@acme.com. |
+| Quote page, final figure with delivery | Total with delivery |
+| Quote page, delivery line label | Delivery |
 | Quote page, revision stamp | Revised Sep 4, 2026 · Delivery added Sep 4, 2026 · Details added Sep 4, 2026. The quote number and the quoted goods price are unchanged. |
 | Quote page, details stamp | Details added Sep 4, 2026 |
 | Quote page, change a chosen delivery | Change delivery |
@@ -314,3 +318,12 @@ Carried from production verbatim, not written here: "Add to cart", "View Price B
   - Fixed a real bug found while testing the PMS path: submitting a quote never re-rendered the document, so the quote page, the PDF and the email kept showing the boot snapshot instead of the configuration just submitted.
   - Mobile fix: the long production label made the pinned footer wrap mid-phrase at 375, so the footer row stacks below 960px.
   - Print behaviour, console cleanliness and the full string audit re-verified after the rework.
+- 2026-09-03 **R4 — copy and UI review fixes.** Items 1, 2, 4 and 5 of the batch were already satisfied by R3b; the rest are new.
+  - **Already done in R3b, verified not regressed:** the breakdown dialog carries production's lines with no muted Shipping/Sales tax rows; the trigger reads "View Price Breakdown" everywhere; the quote page, PDF and email use production's row labels; method names are Title Case participles with lowercase prose in the email lede.
+  - **"Unit Price:" removed from D**, replaced by production's short label "Price each:", with its tooltip reworded to match. The PDP buy box keeps its own "Unit price" field label, which is production's on that page.
+  - **The last two "One-time setup charge" strings** — both in the PDP's decoration helper line — now read "Imprint Method Setup", so the phrase appears nowhere in the file.
+  - **A named Delivery line.** The chosen shipping option was carrying its service name in place of a label; it is now a row labelled "Delivery" with the service and arrival date on its sub-line.
+  - **"Total with delivery"** replaces "Total Price" as the final figure whenever a delivery option has been chosen, on the quote table, the action rail, the mobile bar and the email. Without delivery the figure stays "Total Price". The tax note is unchanged. Logged in the copy addendum.
+  - **Chrome offset is re-measured on resize and orientationchange** while a modal is open. Verified: resizing 812×500 to 375×812 with modal C open leaves the title at y=279 and the close button at y=277, both clear of the sticky bar's 259.
+  - **The tier table gained a scroll cue.** Both tier tables sit in a `.tier-rail` that fades its right edge while the table overflows and clears the fade at the end of the scroll. The cue is recomputed when a modal opens, because a table rendered while hidden measures zero.
+  - **Fixed a pre-existing responsive bug the reviews missed:** 209px of page-level horizontal scroll on the PDP at 375. A grid item's automatic minimum is `min-content`, so the tier table's min-content forced the single-column track to 564px inside a 343px container; `overflow-x:auto` on the inner wrapper does not zero that contribution for a normal-flow block. `min-width:0` on the grid items fixes it. Page overflow is now zero on every view at 375.
