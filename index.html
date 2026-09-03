@@ -145,7 +145,11 @@ input[type=text],input[type=email],input[type=tel],input[type=date],input[type=n
   font-family:inherit;font-size:16px;color:var(--ink);background:#fff;appearance:none;-webkit-appearance:none}
 select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%23525252' stroke-width='2' fill='none'/></svg>");
   background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
-input::placeholder{color:#8C8C8C}
+textarea{width:100%;border:1px solid var(--input-border);border-radius:4px;padding:10px 14px;
+  font-family:inherit;font-size:16px;line-height:1.5;color:var(--ink);background:#fff;resize:vertical}
+textarea:focus{outline:2px solid var(--navy);outline-offset:-1px;border-color:var(--navy)}
+.field.err textarea{border:1px solid var(--error)}
+input::placeholder,textarea::placeholder{color:#8C8C8C}
 input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;border-color:var(--navy)}
 .field{margin-bottom:16px}
 .field.err input,.field.err select{border:1px solid var(--error)}
@@ -275,6 +279,9 @@ a.thumb:hover{background:var(--wash)}
 .modal-hd h2{font-size:21px;font-weight:700;color:var(--ink)}
 .modal-x{background:none;border:0;padding:6px;color:var(--body);line-height:0;border-radius:4px}
 #cDialog:focus{outline:none}
+#msgDialog:focus{outline:none}
+.modal.narrow{width:520px}
+.modal.narrow .modal-body{padding:0 28px 22px}
 .modal-x:hover{background:var(--gray-bg)}
 .modal-body{overflow-y:auto;padding:0 28px 20px;flex:1 1 auto}
 /* two columns: what you are quoting, and who it goes to */
@@ -409,8 +416,14 @@ a.thumb:hover{background:var(--wash)}
 .spec p{font-size:15px;color:var(--body);margin-top:3px}
 .spec .btn-mini{flex:none}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:32px;background:#14181D;color:#fff;font-size:15px;
-  padding:12px 18px;border-radius:4px;z-index:300;display:none}
+  padding:13px 20px;border-radius:4px;z-index:300;display:none;max-width:calc(100% - 32px);text-align:center;
+  box-shadow:0 8px 28px rgba(0,0,0,.35)}
 .toast.on{display:block}
+/* the note that a quote supersedes an earlier one */
+.q-replaces{font-size:15px;color:var(--body);margin-top:8px}
+.q-replaces b{color:var(--ink);font-weight:700}
+/* page D, while editing an issued quote */
+.d-editing{margin-bottom:20px}
 
 /* ============================================================
    V5 — PDF sheet
@@ -517,8 +530,17 @@ a.thumb:hover{background:var(--wash)}
   .mobile-bar .tot{font-size:14px;color:var(--body)}
   .mobile-bar .tot b{display:block;font-size:20px;font-weight:700;color:var(--ink)}
   .mobile-bar .btn-primary{width:auto;min-width:168px;font-size:17px;min-height:48px}
-  .mobile-bar .row2{display:flex;gap:16px;margin-top:8px}
-  .mobile-bar .row2 .actlink{background:none;border:0;padding:2px;font-size:14px;font-weight:700;color:var(--navy)}
+  /* F4 — secondary actions share a bar with the primary CTA, so they carry a
+     real 44px hit area rather than the height of their own text */
+  .mobile-bar .row2{display:flex;gap:4px;margin-top:4px}
+  .mobile-bar .row2 .actlink{flex:1 1 0;min-height:44px;min-width:44px;background:none;border:0;
+    padding:10px 6px;font-size:14px;font-weight:700;color:var(--navy);display:flex;align-items:center;
+    justify-content:center;border-radius:4px}
+  .mobile-bar .row2 .actlink:hover{background:var(--gray-bg)}
+  .has-mobile-bar{padding-bottom:148px}
+  .toast{bottom:150px}
+  /* F3 — a right-aligned sentence orphans its last word at this width */
+  .totals .trow .v.soft{text-align:left;max-width:56%}
   .has-mobile-bar{padding-bottom:132px}
 }
 @media (min-width:961px){ .mobile-only{display:none !important} .c-foot{margin-top:18px} }
@@ -767,7 +789,7 @@ a.thumb:hover{background:var(--wash)}
 
       <div class="sp-confirm" id="cConfirm" hidden>
         <h2>Your request is in</h2>
-        <p>Reference Q-48213. A specialist sends the quote to dana@acme.com by Fri, Sep 4, 2026.</p>
+        <p id="cConfirmRef"></p>
         <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--green-rule)"><div id="cEcho"></div></div>
       </div>
     </div>
@@ -827,8 +849,9 @@ a.thumb:hover{background:var(--wash)}
 
 <div class="wrap-narrow d-page has-mobile-bar">
   <div id="dMain">
-    <h1 class="d-h1">Get an instant quote</h1>
-    <p class="d-lede">Check the details, change what you need, and we'll price it now.</p>
+    <h1 class="d-h1" id="dH1">Get an instant quote</h1>
+    <p class="d-lede" id="dLede">Check the details, change what you need, and we'll price it now.</p>
+    <div id="dEditing" class="d-editing"></div>
 
     <div class="d-card">
       <div class="d-card-hd">
@@ -862,7 +885,7 @@ a.thumb:hover{background:var(--wash)}
 
   <div class="sp-confirm" id="dConfirm" hidden style="margin-top:28px">
     <h2>Your request is in</h2>
-    <p>Reference Q-48213. A specialist sends the quote to dana@acme.com by Fri, Sep 4, 2026.</p>
+    <p id="dConfirmRef"></p>
     <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--green-rule)"><div id="dEcho"></div></div>
   </div>
 </div>
@@ -931,7 +954,7 @@ a.thumb:hover{background:var(--wash)}
 <div class="site-head">
   <div class="site-head-in">
     <div class="logo">Promotion<span class="o">Pros</span><span class="tag">Put your brand on it.</span></div>
-    <div class="hd-title" id="qHeadTitle">Quote Q-48213</div>
+    <div class="hd-title" id="qHeadTitle"></div>
     <button class="linkbtn sm" onclick="go('pdp')">Back to promotionpros.com</button>
   </div>
 </div>
@@ -949,10 +972,11 @@ a.thumb:hover{background:var(--wash)}
     <div class="q-doc" id="qDoc">
       <!-- HEADER -->
       <div class="q-hd">
-        <h1>Quote Q-48213</h1>
+        <h1 id="qH1">Quote Q-48213</h1>
         <span class="q-status" id="qStatus">Valid</span>
       </div>
       <p class="q-sub" id="qSub"></p>
+      <p class="q-replaces" id="qReplaces" hidden></p>
       <p class="revstamp" id="qRevStamp" hidden></p>
 
       <!-- ACTION BAR -->
@@ -1083,8 +1107,8 @@ a.thumb:hover{background:var(--wash)}
       <div class="q-block">
         <p class="tnote" id="qValidity"></p>
         <p class="q-changes no-print" style="margin-top:10px">
-          <button class="linkbtn sm" onclick="go('pdp')">Need changes? Edit this configuration</button>
-          <span class="note" style="display:block;margin-top:4px">Opens the product page with these settings. A change produces a new quote number.</span>
+          <button class="linkbtn sm" id="qEditBtn">Need changes? Edit this configuration</button>
+          <span class="note" style="display:block;margin-top:4px">Opens the quote editor with these settings. A change produces a new quote number.</span>
         </p>
       </div>
 
@@ -1096,7 +1120,7 @@ a.thumb:hover{background:var(--wash)}
             <div class="who" id="qSpecWho">Terry Alvarez</div>
             <p id="qSpecBody">312-555-0148 &middot; terry@promotionpros.com</p>
           </div>
-          <button class="btn-mini no-print">Message us about this quote</button>
+          <button class="btn-mini no-print" id="qMsgBtn">Message us about this quote</button>
         </div>
       </div>
 
@@ -1150,13 +1174,13 @@ a.thumb:hover{background:var(--wash)}
 <div class="pdf-stage">
   <div class="sheet" id="pdfSheet">
     <div class="watermark"><span>Expired Oct 3, 2026</span></div>
-    <div class="runhd"><span>Quote Q-48213 &middot; PromotionPros</span><span>Page 1 of 1</span></div>
+    <div class="runhd"><span id="pdfRun">Quote Q-48213 &middot; PromotionPros</span><span>Page 1 of 1</span></div>
     <div class="letterhead">
       <div><div class="logo" style="font-size:22px">Promotion<span class="o">Pros</span><span class="tag">Put your brand on it.</span></div></div>
       <div class="addrblock">131 N Main St<br>West Bend, WI 53095<br>262-429-1300<br>info@promotionpros.com</div>
     </div>
 
-    <h1>Quote Q-48213</h1>
+    <h1 id="pdfH1">Quote Q-48213</h1>
     <p class="pmeta">Issued Sep 3, 2026 &nbsp;&middot;&nbsp; Valid through Oct 3, 2026</p>
     <p class="pstamp" id="pdfStamp" hidden></p>
 
@@ -1186,7 +1210,7 @@ a.thumb:hover{background:var(--wash)}
     </div>
 
     <div class="pfoot">
-      <span>View online, share, or order at promotionpros.com/q/48213
+      <span>View online, share, or order at <span id="pdfLink">promotionpros.com/q/48213</span>
         <span class="gen" id="pdfGen">Generated Sep 3, 2026. The link above always shows the current version.</span></span>
       <svg class="qr" viewBox="0 0 25 25" role="img" aria-label="QR code to promotionpros.com/q/48213" shape-rendering="crispEdges">
         <rect width="25" height="25" fill="#fff"/>
@@ -1244,7 +1268,7 @@ a.thumb:hover{background:var(--wash)}
     <p>This price is honored at checkout through Oct 3, 2026.</p>
     <div class="mail-attach">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 2.5h6l4 4v11H5z" stroke="#525252" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 2.5v4h4" stroke="#525252" stroke-width="1.5" stroke-linejoin="round"/></svg>
-      <span><b style="color:#111">PromotionPros-Quote-Q-48213.pdf</b> &middot; 214 KB</span>
+      <span><b style="color:#111" id="mailFile">PromotionPros-Quote-Q-48213.pdf</b> &middot; 214 KB</span>
     </div>
     <p>The PDF is attached, so you can forward it for approval.</p>
     <div class="mail-sig">Terry Alvarez<br>PromotionPros<br>312-555-0148 &middot; terry@promotionpros.com</div>
@@ -1252,6 +1276,39 @@ a.thumb:hover{background:var(--wash)}
   <p class="mail-foot">You're getting this because you requested a quote at promotionpros.com.</p>
 </div>
 </section>
+
+<!-- ============================================================
+     MESSAGE A SPECIALIST — opened from the issued quote. Small on
+     purpose: the quote number and the buyer's email are already
+     known, so the only thing left to ask for is the question.
+     ============================================================ -->
+<div class="modal-back" id="backMsg">
+  <div class="modal narrow" role="dialog" aria-modal="true" aria-labelledby="msgTitle" id="msgDialog" tabindex="-1">
+    <div class="modal-hd">
+      <h2 id="msgTitle">Message us about this quote</h2>
+      <button class="modal-x" id="msgX" aria-label="Close">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 5l12 12M17 5L5 17" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label class="lbl" for="msgSubject">Subject</label>
+        <input type="text" id="msgSubject" value="Quote #Q-48213">
+      </div>
+      <div class="field">
+        <label class="lbl" for="msgEmail">Your email</label>
+        <input type="email" id="msgEmail" value="dana@acme.com">
+      </div>
+      <div class="field" id="msgFText">
+        <label class="lbl" for="msgText">Message</label>
+        <textarea id="msgText" rows="4" placeholder="What would you like to ask about this quote?"></textarea>
+        <p class="errmsg">Add a message so the specialist knows what to answer</p>
+      </div>
+      <button class="btn-primary sm" id="msgSend">Send</button>
+      <p class="reason" id="msgReason"></p>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast" role="status" aria-live="polite">Link copied</div>
 
@@ -1294,6 +1351,7 @@ var RATES = [
 
 var S = {
   tab:'pdp', entry:'C', cfgComplete:true, submitted:false,
+  quoteNo:48213, replaces:null, editing:false,
   qty:250, color:'natural', method:'pad', loc:'barrel', colors:2, pms:false,
   decorationTouched:true, ratesAvailable:true,
   dOpen:null, dNotices:[],
@@ -1307,6 +1365,20 @@ function newInst(){ return {name:'', email:'', touched:{}}; }
 S.inst.C = newInst(); S.inst.D = newInst();
 
 var $ = function(id){ return document.getElementById(id); };
+/* R6 — the quote number is state, not a string literal, because editing an
+   issued quote has to produce a new one. Every surface reads it from here. */
+function qref(){ return 'Q-' + S.quoteNo; }
+function qrefPrev(){ return 'Q-' + S.replaces; }
+/* the promise date on every specialist path: the next business day from the
+   mock "today", never a hand-written string that can drift out of date */
+var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var TODAY = new Date(2026, 8, 3);
+var DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function nextBusinessDay(){
+  var d = new Date(TODAY.getTime());
+  do { d.setDate(d.getDate() + 1); } while (d.getDay() === 0 || d.getDay() === 6);
+  return DAYS[d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+}
 var fmt = function(n){ return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
 var esc = function(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); };
 var num = function(n){ return n.toLocaleString('en-US'); };
@@ -1355,7 +1427,8 @@ function price(){
 /* the quote is a locked artifact: a snapshot, not a live read of the PDP */
 function snapshot(){
   var p = price(), m = METHODS[S.method];
-  return {qty:S.qty, color:colorName(), method:methodName(), prose:m.prose, loc:locName(),
+  return {ids:{color:S.color, method:S.method, loc:S.loc, colors:S.colors, pms:S.pms},
+          qty:S.qty, color:colorName(), method:methodName(), prose:m.prose, loc:locName(),
           colors:S.colors, colorsLabel:colorsLabel(), imprintLine:imprintLine(), pms:S.pms,
           unit:p.unit, goods:p.goods, run:p.run, runEach:p.runEach, extra:p.extra,
           setup:p.setup, sub:p.sub, defaulted:!S.decorationTouched};
@@ -1393,9 +1466,11 @@ function go(v){
   for (var j=0;j<t.length;j++) t[j].classList.toggle('on', t[j].dataset.v === v);
   $('protoHelp').innerHTML = HELP[v];
   closeModal(true);
+  /* scroll first, then open: the chip rail's offset is measured, and a rail
+     measured while it is scrolled off screen leaves the dialog under it */
+  window.scrollTo({top:0});
   if (v === 'modc'){ setEntry('C'); openModal(); }
   if (v === 'paged') setEntry('D');
-  window.scrollTo({top:0});
 }
 (function(){
   var t = document.querySelectorAll('.proto-tab');
@@ -1535,7 +1610,10 @@ function bdRow(lab, q, u, amt, cls){
     '<span class="amt">' + (amt || '') + '</span></div>';
 }
 var FREE = '<span class="free">Free</span>';
-function breakdownFrom(c){
+/* showTotal=false on the issued quote and the PDF: the totals block below
+   owns the total there, and two bold "Total Price" rows on one screen
+   disagreed the moment delivery was added (readability review F1). */
+function breakdownFrom(c, showTotal){
   var h = '';
   h += bdRow('Base Item Price', num(c.qty) + ' &times;', fmt(c.unit), fmt(c.goods));
   h += bdRow('Decoration method: ' + esc(c.method), '', '', '', 'lo');
@@ -1544,12 +1622,13 @@ function breakdownFrom(c){
   h += bdRow('Imprint Method Run Charge', c.run > 0 ? num(c.qty) + ' &times;' : '',
              c.run > 0 ? fmt(c.runEach) : '', c.run > 0 ? fmt(c.run) : FREE);
   if (c.pms) h += bdRow('Pantone/PMS color match', '', '', '<span class="free">Applied at proofing</span>', 'lo');
-  h += '<div class="bd-tot"><span class="k">Total Price</span><span class="v">' + fmt(c.sub) + '</span></div>';
-  h += '<div class="bd-avg"><span>Average price per unit</span><span>' + fmt(c.sub / c.qty) + ' per unit</span></div>';
+  if (showTotal) h += '<div class="bd-tot"><span class="k">Total Price</span><span class="v">' + fmt(c.sub) + '</span></div>';
+  h += '<div class="bd-avg"' + (showTotal ? '' : ' style="margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)"') +
+       '><span>Average price per unit</span><span>' + fmt(c.sub / c.qty) + ' per unit</span></div>';
   return h;
 }
 function breakdownHTML(){
-  return breakdownFrom(snapshot()) +
+  return breakdownFrom(snapshot(), true) +
     '<p class="bd-foot">Taxes and delivery costs are not included. They will be calculated at checkout.</p>';
 }
 function specialistHTML(){
@@ -1749,13 +1828,20 @@ function setDecorationChip(touched){
 function ctaState(k){
   var sp = isSpecialist(), ok = contactValid(k) && (k === 'C' || qtyValid());
   return {
-    label: sp ? 'Request a specialist quote' : 'Get my quote',
+    label: sp ? 'Request a specialist quote' : (k === 'D' && S.editing) ? 'Get an updated quote' : 'Get my quote',
     enabled: ok,
     reason: !contactValid(k) ? 'Add your name and email to generate the quote'
           : (k === 'D' && !qtyValid()) ? 'Quantity starts at 100 pieces for this product' : '',
-    promise: sp ? 'A specialist sends your quote by Fri, Sep 4, 2026.'
+    promise: sp ? 'A specialist sends your quote by ' + nextBusinessDay() + '.'
                 : 'Priced now and locked for 30 days. The quote page and PDF go to your email.'
   };
+}
+/* one place decides what the CTA on page D is called */
+function renderRefs(){
+  var spDate = nextBusinessDay();
+  $('cConfirmRef').textContent = 'Reference ' + qref() + '. A specialist sends the quote to dana@acme.com by ' + spDate + '.';
+  $('dConfirmRef').textContent = 'Reference ' + qref() + '. A specialist sends the quote to dana@acme.com by ' + spDate + '.';
+  renderEditingBanner();
 }
 function renderCTAs(){
   [['C','cSubmit','cReason','cPromise'],['D','dSubmit','dReason','dPromise']].forEach(function(a){
@@ -1770,7 +1856,7 @@ function renderCTAs(){
   $('dMobCta').textContent = d.label;
   $('dMobCta').disabled = !d.enabled;
 }
-function renderAll(){ renderPDP(); renderC(); renderD(); renderCTAs(); }
+function renderAll(){ renderPDP(); renderC(); renderD(); renderCTAs(); renderRefs(); }
 
 /* ============================================================
    SUBMIT — the quote is generated here and never edited afterwards
@@ -1785,6 +1871,7 @@ function submit(k){
     renderAll();
     return;
   }
+  if (S.editing){ S.replaces = S.quoteNo; S.quoteNo += 1; S.editing = false; }
   S.quote.cfg = snapshot();
   S.quote.state = 'valid';
   S.quote.arrival = true;
@@ -1794,6 +1881,7 @@ function submit(k){
   S.quote.mail = 'first';
   S.ratesAvailable = true;
   syncQuoteChips();
+  renderAll();
   renderQuoteAll();
   closeModal();
   go('quote');
@@ -1807,10 +1895,17 @@ $('dMobCta').addEventListener('click', function(){ submit('D'); });
    ============================================================ */
 var openC = false, lastFocus = null;
 function setChromeVars(){
+  /* the chip deck only contributes when the PDP view is the one on screen;
+     measured, never assumed, so the message dialog opened from view 4 does
+     not offset itself past a deck that is not rendered */
   var deck = document.querySelector('#view-pdp .chipdeck');
-  var chrome = deck ? deck.getBoundingClientRect().bottom : $('protoHelp').getBoundingClientRect().bottom;
+  var deckBottom = (deck && deck.offsetParent !== null) ? deck.getBoundingClientRect().bottom : 0;
+  /* the prototype bar is sticky, so its own height is always in the way; the help
+     strip and the chip deck scroll away and contribute only while on screen */
+  var barBottom = document.querySelector('.proto-bar').getBoundingClientRect().bottom;
+  var chrome = Math.max(0, barBottom, deckBottom, $('protoHelp').getBoundingClientRect().bottom);
   document.documentElement.style.setProperty('--chrome', Math.max(0, chrome) + 'px');
-  document.documentElement.style.setProperty('--chromebar', Math.max(0, $('protoHelp').getBoundingClientRect().bottom) + 'px');
+  document.documentElement.style.setProperty('--chromebar', Math.max(0, barBottom, $('protoHelp').getBoundingClientRect().bottom) + 'px');
 }
 /* the CTA block lives in the right column on desktop and in the dialog's own
    footer below 960px. One node, moved — never two copies that can drift. */
@@ -1901,7 +1996,6 @@ var QS = {
   ordered: {chip:'Ordered', cls:'ordered', cta:'View order W-10488', help:'',
             validity:'Ordered on Sep 10, 2026 as order W-10488.'}
 };
-var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function shortDate(v){ var p = v.split('-'); return MONTHS[parseInt(p[1],10) - 1] + ' ' + parseInt(p[2],10); }
 
 function preparedLine(){
@@ -1958,9 +2052,13 @@ function renderQuote(){
   show($('qInvalid'), bad);
   show($('qLive'), !bad);
   show($('qMobBar'), !bad);
-  $('qHeadTitle').textContent = bad ? 'Quote' : 'Quote Q-48213';
+  $('qHeadTitle').textContent = bad ? 'Quote' : 'Quote ' + qref();
   if (bad) return;
 
+  $('qH1').textContent = 'Quote ' + qref();
+  show($('qReplaces'), S.replaces !== null);
+  $('qReplaces').innerHTML = S.replaces !== null
+    ? 'Replaces quote <b>#' + qrefPrev() + '</b>, which this quote supersedes.' : '';
   $('qStatus').textContent = st.chip;
   $('qStatus').className = 'q-status ' + st.cls;
   $('qSub').innerHTML = preparedLine();
@@ -1984,7 +2082,7 @@ function renderQuote(){
   show($('qProwBody'), S.quote.prodOpen);
   $('qConfig').innerHTML = configRows();
   show($('qDefaultNote'), !!c.defaulted);
-  $('qBreakdown').innerHTML = breakdownFrom(c);
+  $('qBreakdown').innerHTML = breakdownFrom(c, false);
   $('chipProdCol').classList.toggle('on', !S.quote.prodOpen);
   $('chipProdExp').classList.toggle('on', S.quote.prodOpen);
 
@@ -2056,11 +2154,17 @@ function renderDelivery(){
       }).join('') + '</div>' +
       '<p class="note">Arrival dates assume artwork approved by Fri, Sep 5, 2026</p></fieldset>';
     var rs = $('qRates').querySelectorAll('input[type=radio]');
-    for (var n=0;n<rs.length;n++) rs[n].addEventListener('change', function(){
+    var pick = function(){
       S.quote.del.chosen = this.value; S.quote.del.stage = 'chosen';
       syncQuoteChips(); renderQuoteAll();
       announce('Delivery added. New total ' + fmt(qTotal()));
-    });
+    };
+    for (var n=0;n<rs.length;n++){
+      /* change alone misses the cheapest option, which renders preselected
+         (B-CHK017): clicking an already-checked radio fires click, not change */
+      rs[n].addEventListener('change', pick);
+      rs[n].addEventListener('click', pick);
+    }
   }
 }
 $('qDelOn').addEventListener('change', function(){
@@ -2111,8 +2215,7 @@ $('qShowOpts').addEventListener('click', function(){
 $('qChangeAddr').addEventListener('click', function(){ S.quote.del.stage = 'address'; syncQuoteChips(); renderQuote(); });
 $('qDelResend').addEventListener('click', function(){
   S.quote.mail = 'updated'; renderMail();
-  var t = $('toast'); t.textContent = 'Updated PDF emailed to dana@acme.com'; t.classList.add('on');
-  setTimeout(function(){ t.classList.remove('on'); t.textContent = 'Link copied'; }, 3000);
+  showToast('Updated PDF emailed to dana@acme.com');
 });
 
 /* ---- add details, behind a link ---- */
@@ -2180,10 +2283,68 @@ function syncQuoteChips(){
 })();
 chipPair('chipArrOn','chipArrOff', function(on){ S.quote.arrival = on; renderQuote(); });
 chipPair('chipRepNamed','chipRepGeneric', function(named){ S.quote.rep = named ? 'named' : 'generic'; renderQuote(); });
-function copyLink(){
-  var t = $('toast'); t.textContent = 'Link copied'; t.classList.add('on');
-  setTimeout(function(){ t.classList.remove('on'); }, 3000);
+var toastTimer = null;
+function showToast(msg){
+  var t = $('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('on'); }, 3400);
 }
+function copyLink(){ showToast('Link copied'); }
+/* ============================================================
+   R6 — MESSAGE A SPECIALIST. The CTA was a dead click (usability F3).
+   The quote number and the buyer's email are already known, so the
+   dialog asks for one thing and states when an answer arrives.
+   ============================================================ */
+var msgOpen = false, msgLastFocus = null;
+function openMsg(){
+  msgLastFocus = document.activeElement;
+  setChromeVars();
+  msgOpen = true;
+  $('msgSubject').value = 'Quote #' + qref();
+  $('msgText').value = '';
+  $('msgFText').classList.remove('err');
+  $('msgReason').textContent = 'A specialist replies by ' + nextBusinessDay() + '.';
+  $('backMsg').classList.add('open');
+  document.body.classList.add('modal-open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ $('msgDialog').focus(); }, 30);
+}
+function closeMsg(){
+  if (!msgOpen) return;
+  msgOpen = false;
+  $('backMsg').classList.remove('open');
+  document.body.classList.remove('modal-open');
+  document.body.style.overflow = '';
+  if (msgLastFocus && msgLastFocus.focus) msgLastFocus.focus();
+}
+$('qMsgBtn').addEventListener('click', openMsg);
+$('msgX').addEventListener('click', closeMsg);
+$('backMsg').addEventListener('mousedown', function(e){ if (e.target === this) closeMsg(); });
+$('msgSend').addEventListener('click', function(){
+  if ($('msgText').value.trim() === ''){
+    $('msgFText').classList.add('err');
+    $('msgText').setAttribute('aria-invalid','true');
+    $('msgText').focus();
+    return;
+  }
+  closeMsg();
+  showToast('Message sent. A specialist replies by ' + nextBusinessDay() + '.');
+});
+document.addEventListener('keydown', function(e){
+  if (!msgOpen) return;
+  if (e.key === 'Escape'){ closeMsg(); return; }
+  if (e.key === 'Tab'){
+    var f = $('backMsg').querySelectorAll('button, input, textarea');
+    var list = []; for (var i=0;i<f.length;i++){ if (!f[i].disabled && f[i].offsetParent !== null) list.push(f[i]); }
+    if (!list.length) return;
+    var first = list[0], last = list[list.length - 1];
+    if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
+});
+
 $('qCopy').addEventListener('click', copyLink);
 $('qMobShare').addEventListener('click', copyLink);
 $('qPdf').addEventListener('click', function(){ go('pdf'); });
@@ -2198,17 +2359,21 @@ $('qMobCta').addEventListener('click', function(){ $('qCta').click(); });
    ============================================================ */
 function renderPdf(){
   var c = S.quote.cfg, lines = stampLines(), d = S.quote.det;
-  show($('pdfStamp'), lines.length > 0);
-  $('pdfStamp').textContent = lines.length ? 'Revised Sep 4, 2026 · ' + lines.join(' · ') : '';
+  var pre = (S.replaces !== null) ? 'Replaces quote #' + qrefPrev() + '.' : '';
+  show($('pdfStamp'), lines.length > 0 || pre !== '');
+  $('pdfStamp').textContent = [pre, lines.length ? 'Revised Sep 4, 2026 · ' + lines.join(' · ') : ''].filter(Boolean).join(' ');
   var prep = '<dt>Name</dt><dd>Dana Whitfield</dd>';
   if (d.added && d.company) prep += '<dt>Company</dt><dd>' + esc(d.company) + '</dd>';
   prep += '<dt>Email</dt><dd>dana@acme.com</dd>';
   if (d.added && d.phone) prep += '<dt>Phone</dt><dd>' + esc(d.phone) + '</dd>';
   $('pdfPrepared').innerHTML = prep;
   $('pdfConfig').innerHTML = '<dt>Product</dt><dd>Del Mar Bamboo Stylus Pen (PP-DELMAR-BMB)</dd>' + configRows();
-  $('pdfBreakdown').innerHTML = breakdownFrom(c);
+  $('pdfBreakdown').innerHTML = breakdownFrom(c, false);
   $('pdfTotals').innerHTML = totalsHTML(true);
   $('pdfTerms').innerHTML = termsHTML();
+  $('pdfRun').innerHTML = 'Quote ' + qref() + ' &middot; PromotionPros';
+  $('pdfH1').textContent = 'Quote ' + qref();
+  $('pdfLink').textContent = 'promotionpros.com/q/' + S.quoteNo;
   $('pdfGen').textContent = 'Generated ' + (lines.length ? 'Sep 4' : 'Sep 3') + ', 2026. The link above always shows the current version.';
 }
 chipPair('chipPdfValid','chipPdfExpired', function(valid){ $('pdfSheet').classList.toggle('expired', !valid); });
@@ -2219,13 +2384,14 @@ function renderMail(){
   $('chipMailFirst').classList.toggle('on', !upd);
   $('chipMailUpdated').classList.toggle('on', upd);
   $('mailSubj').textContent = (upd ? 'Updated: ' : '') +
-    'Your PromotionPros quote #Q-48213: Del Mar Bamboo Stylus Pen, ' + num(c.qty) + ' pieces';
+    'Your PromotionPros quote #' + qref() + ': Del Mar Bamboo Stylus Pen, ' + num(c.qty) + ' pieces';
+  $('mailFile').textContent = 'PromotionPros-Quote-' + qref() + '.pdf';
   $('mailPre').textContent = 'Total ' + fmt(qTotal()) + ', valid through Oct 3, 2026. PDF attached.';
   $('mailFrom').innerHTML = 'PromotionPros &lt;quotes@promotionpros.com&gt; &middot; to dana@acme.com &middot; ' + (upd ? 'Sep 4' : 'Sep 3') + ', 2026';
   $('mailLede').textContent = upd
     ? 'Here\'s the updated quote for ' + num(c.qty) + ' Del Mar Bamboo Stylus Pens, with the delivery you added.'
     : 'Here\'s your quote for ' + num(c.qty) + ' Del Mar Bamboo Stylus Pens, with ' + c.prose + ' on the ' + c.loc.toLowerCase() + ' in ' + c.colorsLabel.toLowerCase() + '.';
-  var rows = [['Quote', 'Q-48213'],
+  var rows = [['Quote', qref()],
               ['Configuration', configLine(c)],
               ['Base Item Price', num(c.qty) + ' × ' + fmt(c.unit) + ' = ' + fmt(c.goods)],
               ['Imprint Method Setup', c.setup > 0 ? fmt(c.setup) : 'Free'],
@@ -2243,6 +2409,37 @@ $('chipMailFirst').addEventListener('click', function(){ S.quote.mail = 'first';
 $('chipMailUpdated').addEventListener('click', function(){ S.quote.mail = 'updated'; renderMail(); });
 
 function renderQuoteAll(){ renderQuote(); renderPdf(); renderMail(); }
+
+/* ============================================================
+   R6 — EDITING AN ISSUED QUOTE.
+   The old path opened the PDP, where decoration method is display
+   text with no control, so the one documented edit route dead-ended
+   (usability F2). It now opens page D, which is the editor, loaded
+   with this quote's own configuration. Saving there issues the next
+   number and the new document says which one it replaces.
+   ============================================================ */
+function editThisQuote(){
+  var c = S.quote.cfg;
+  S.color = c.ids.color; S.method = c.ids.method; S.loc = c.ids.loc;
+  S.colors = c.ids.colors; S.pms = c.ids.pms; S.qty = c.qty;
+  S.editing = true; S.dOpen = null; S.dNotices = []; S.submitted = false;
+  setDecorationChip(!c.defaulted);
+  setEntry('D');
+  renderAll();
+  go('paged');
+}
+$('qEditBtn').addEventListener('click', editThisQuote);
+
+function renderEditingBanner(){
+  var on = S.editing;
+  $('dH1').textContent = on ? 'Edit quote ' + qref() : 'Get an instant quote';
+  $('dLede').textContent = on
+    ? 'Change what you need. Saving issues a new quote number that replaces ' + qref() + '.'
+    : "Check the details, change what you need, and we'll price it now.";
+  $('dEditing').innerHTML = on
+    ? bandHTML('band-info', 'You are editing quote <b>' + qref() + '</b>. It stays valid until you save a change.')
+    : '';
+}
 
 /* ============================================================
    BOOT
