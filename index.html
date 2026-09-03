@@ -659,7 +659,7 @@ table.items tr.softrow td{color:var(--body)}
           <li><b>Moso bamboo barrel</b> &mdash; a warm, low-plastic body that photographs well in gift sets</li>
           <li><b>Capacitive stylus tip</b> &mdash; works on phones and tablets without swapping pens</li>
           <li><b>Black medium-point refill</b> &mdash; standard cartridge, replaceable after the giveaway</li>
-          <li><b>Pad printed on the back</b> &mdash; a crisp mark on a curved natural surface</li>
+          <li><b>Pad printed on the barrel</b> &mdash; a crisp mark on a curved natural surface</li>
         </ul>
       </div>
     </div>
@@ -693,7 +693,7 @@ table.items tr.softrow td{color:var(--body)}
 
       <div class="pdp-sec">
         <div class="step-h"><span class="num">3</span> Decoration Method</div>
-        <p style="font-size:14.5px">Decoration method: <b style="color:var(--ink)" id="pdpMethod">Pad Printed</b> &middot; <span id="pdpLoc">Back</span> &middot; <span id="pdpColors">2 Colors</span></p>
+        <p style="font-size:14.5px">Decoration method: <b style="color:var(--ink)" id="pdpMethod">Pad Printed</b> &middot; <span id="pdpLoc">Barrel</span> &middot; <span id="pdpColors">2 Colors</span></p>
         <p class="note" id="pdpDecNote">Imprint Method Setup: $60.00 per location. Each imprint color past the first adds $0.35 per piece.</p>
         <div id="pdpPmsHost"></div>
       </div>
@@ -813,7 +813,7 @@ table.items tr.softrow td{color:var(--body)}
   <span class="hd">View 3 — Option D, the editable modal.</span>
   <li><b>D1</b> — Quantity, decoration method and imprint location are editable, using production's own controls: the price-tier table, the stacked method options, and the native location select. Everything re-prices live.</li>
   <li><b>D2</b> — Color and imprint colors stay read-only, because both are PDP swatch decisions. The helper says where they change.</li>
-  <li><b>D3</b> — Change the location to Front (large), then pick <b>Laser Engraved</b>. Production discards the chosen location on every method change, and laser prints in one color, so both the location and the imprint-color count change. Both are announced in an info band above the footer, never silently.</li>
+  <li><b>D3</b> — Change the location to Cap, then pick <b>Laser Engraved</b>. Production discards the chosen location on every method change, and laser prints in one color, so both the location and the imprint-color count change. Both are announced in an info band above the footer, never silently.</li>
   <li><b>D4</b> — Type a quantity under 100, or over 10,000: the first is a validation error, the second cross-fades the modal into the specialist state mid-edit while keeping every typed value.</li>
   <li><b>D5</b> — The pinned footer is production's own collapsed block: "Subtotal with Setup Fee:", "Price each:", "View Price Breakdown". The capture shows that figure carries base, setup and run, so there is one money number in the modal, not two.</li>
   <li><b>D6</b> — Method and location controls are built from the 2026-09-03 capture. They are reconstructions: production's method cards are hand-authored BEM components and its location control is a react-select combobox, neither of which a static prototype imports. That is a build constraint for Boris, not a design choice.</li>
@@ -1036,7 +1036,7 @@ table.items tr.softrow td{color:var(--body)}
         <div class="q-sec">
           <h2 class="big">Del Mar Bamboo Stylus Pen</h2>
           <div class="q-kv" id="qConfig"></div>
-          <p class="q-note" id="qDefaultNote" style="display:none">This quote prices the default decoration: pad printing, Back, 1 Color.</p>
+          <p class="q-note" id="qDefaultNote" style="display:none">This quote prices the default decoration: pad printing, Barrel, 1 Color.</p>
         </div>
 
         <div class="q-sec">
@@ -1353,11 +1353,12 @@ var COLORS = [
   {id:'black',   name:'Black barrel',   hex:'#111111'},
   {id:'white',   name:'White accent',   hex:'#F2F2F2'}
 ];
-/* Location list and method names are production's, captured 2026-09-03. Production offers
-   the same location list to every method and RESETS the selection to the first option
-   whenever the method changes. */
-var LOC_ORDER = ['back','front-s','front-l','two','none'];
-var LOCS = {'back':'Back', 'front-s':'Front (small)', 'front-l':'Front (large)', 'two':'Two Sided', 'none':'No Imprint'};
+/* Imprint locations are PRODUCT DATA, so this is the pen's own list — not the tumbler's.
+   What production owns here is the control idiom (a combobox, not a swatch group), the
+   label formatting, the step names, and the reset-to-first-option on method change.
+   "No Imprint" is production's per-product opt-out and is offered wherever the data has it. */
+var LOC_ORDER = ['barrel','clip','cap','none'];
+var LOCS = {'barrel':'Barrel', 'clip':'Clip', 'cap':'Cap', 'none':'No Imprint'};
 /* maxColors 0 = a non-count idiom (Full Color), which switches the Imprint Colors row wording */
 var METHODS = {
   pad:    {name:'Pad Printed',    prose:'pad printing',    sub:'Up to 4 colors · 5 locations',
@@ -1377,7 +1378,7 @@ var RATES = [
 
 var S = {
   tab:'pdp', entry:'C', cfgComplete:true, submitted:false,
-  qty:250, color:'natural', method:'pad', loc:'back', colors:2, pms:false,
+  qty:250, color:'natural', method:'pad', loc:'barrel', colors:2, pms:false,
   decorationTouched:true, ratesAvailable:true,
   notices:[],
   inst:{},
@@ -1661,7 +1662,7 @@ function renderC(){
     (S.pms ? ' · Pantone/PMS match' : '');
   /* the defaulted decoration is spelled out in words above the total, never left implicit */
   $('cNotice').innerHTML = S.decorationTouched ? '' : bandHTML('band-amber',
-    'This quote prices the default decoration: pad printing, Back, 1 Color. ' +
+    'This quote prices the default decoration: pad printing, Barrel, 1 Color. ' +
     '<button class="linkbtn" id="cNoticeChange">Change it on the product page</button>.');
   if ($('cNoticeChange')) $('cNoticeChange').addEventListener('click', backToConfigurator);
 
@@ -1908,13 +1909,13 @@ document.addEventListener('keydown', function(e){
 });
 
 /* ---- PDP-view chips ---- */
-$('chipDecSet').addEventListener('click', function(){ setDecorationChip(true); S.colors = 2; S.method = 'pad'; S.loc = 'back'; S.qty = 250; S.notices = []; renderAll(); });
-$('chipDecDefault').addEventListener('click', function(){ setDecorationChip(false); S.colors = 1; S.method = 'pad'; S.loc = 'back'; S.notices = []; renderAll(); });
+$('chipDecSet').addEventListener('click', function(){ setDecorationChip(true); S.colors = 2; S.method = 'pad'; S.loc = 'barrel'; S.qty = 250; S.notices = []; renderAll(); });
+$('chipDecDefault').addEventListener('click', function(){ setDecorationChip(false); S.colors = 1; S.method = 'pad'; S.loc = 'barrel'; S.notices = []; renderAll(); });
 function priceChip(which){
   ['chipPriceOk','chipPriceQty','chipPriceMethod'].forEach(function(id){ $(id).classList.toggle('on', id === which); });
-  if (which === 'chipPriceOk'){ S.qty = 250; S.method = 'pad'; S.loc = 'back'; }
-  if (which === 'chipPriceQty'){ S.qty = 25000; S.method = 'pad'; S.loc = 'back'; }
-  if (which === 'chipPriceMethod'){ S.qty = 250; S.method = 'dyesub'; S.loc = 'back'; }
+  if (which === 'chipPriceOk'){ S.qty = 250; S.method = 'pad'; S.loc = 'barrel'; }
+  if (which === 'chipPriceQty'){ S.qty = 25000; S.method = 'pad'; S.loc = 'barrel'; }
+  if (which === 'chipPriceMethod'){ S.qty = 250; S.method = 'dyesub'; S.loc = 'barrel'; }
   S.notices = []; S.submitted = false;
   $('chipSubNo').classList.add('on'); $('chipSubYes').classList.remove('on');
   renderAll();
