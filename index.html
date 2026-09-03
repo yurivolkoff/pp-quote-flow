@@ -1,13 +1,20 @@
-<!-- Design library: design/library/promotionpros-pdp.md + promotionpros-checkout.md (2026-09-03) -->
+<!-- Design library: design/library/promotionpros-pdp.md (2026-09-03) -->
 <!--
-  PromotionPros — Instant Quote flow prototype — R3
+  PromotionPros — Instant Quote flow prototype — R5
   Spec: design/prototypes/2026-09-03-quote-flow/spec.md (copy deck IDs)
-  Round-3 spec: research/reports/2026-09-03-quote-request-lean-options-ux-analysis.md
-  Options A and B are removed. The request surface is now Option C (lean 480px modal)
-  or Option D (640px editable modal reusing production configurator controls).
-  Company, phone, need-by and delivery moved to two post-capture modules on the quote page.
-  Vocabulary: "decoration" names the process, "imprint" names the mark, its colors and
-  its charges; the unit word is "pieces" on every surface.
+  Analysis: research/reports/2026-09-03-quote-request-lean-options-ux-analysis.md
+
+  R5 rebuild, from product-owner feedback. Modal for the simple scenario,
+  page for the long one:
+    - View 2, Modal C: 760px, two columns, lean, no vertical scroll at 1280x800.
+    - View 3, Page D: a full page, 720px measure, three editable values behind
+      Change disclosures. No PDP tier table, no pill cards, no step badges.
+    - View 4: simplified quote document. The line-item table is removed, details
+      collapsed, delivery is a checkbox, the shipping row links to it.
+  Readability pass throughout: fewer boxes and borders, orange reserved for the
+  primary action, navy text links, no all-caps, 16px/1.5 body.
+  Vocabulary unchanged: production price labels, "pieces", decoration method,
+  locations are product data (Barrel / Clip / Cap / No Imprint).
 -->
 <!doctype html>
 <html lang="en">
@@ -20,46 +27,45 @@
 <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   TOKENS — from design/library/promotionpros-pdp.md.
-   Tailwind semantic names kept in comments so Boris can map back.
+   TOKENS — design/library/promotionpros-pdp.md
    ============================================================ */
 :root{
-  --orange:#FE5000;            /* bg-secondary */
-  --orange-hover:#E04700;      /* hover:bg-secondary-hover */
-  --wash:#FFF6F2;              /* bg-secondary-wash */
-  --navy:#001542;              /* text-primary */
-  --ink:#1F1F1F;               /* text-ink */
-  --body:#525252;              /* text-body */
-  --helper:#6C6C6C;            /* muted helper text, 5.3:1 on white */
+  --orange:#FE5000;            /* bg-secondary — primary action only */
+  --orange-hover:#E04700;
+  --wash:#FFF6F2;
+  --navy:#001542;              /* text-primary, every text link */
+  --ink:#1F1F1F;
+  --body:#525252;
+  --helper:#6C6C6C;            /* 5.3:1 on white */
   --rule:#E5E5E5;
   --rule-strong:#D4D4D4;
-  --swatch-rule:#EEEEEE;       /* ring-rule */
-  --input-border:#CDCDCD;      /* checkout input border, carried forward */
-  --error:#F80A0A;             /* verbatim production border color */
-  --error-text:#D70000;        /* darkened for 5.4:1 text contrast — see notes.md */
-  --step-bar:#4A4A4A;          /* production step header bar */
+  --swatch-rule:#EEEEEE;
+  --input-border:#CDCDCD;
+  --error:#F80A0A;
+  --error-text:#D70000;        /* 5.4:1 — production's red fails the text floor */
   --info-ink:#0B4A8F; --info-bg:#EFF6FF; --info-rule:#B9D6F5;
   --amber-ink:#7A4A00; --amber-bg:#FFF6E5; --amber-rule:#E8C88A;
   --green-ink:#12653A; --green-bg:#ECFDF3; --green-rule:#A7E3C4;
-  --gray-bg:#F5F5F5; --gray-ink:#4A4A4A; --gray-rule:#D9D9D9;
+  --gray-bg:#F5F5F5; --gray-ink:#4A4A4A;
   --disabled-bg:#DCDCDC; --disabled-text:#6C6C6C;
-  --shadow-card:0 1px 3px rgba(0,0,0,.06);
+  --page:#F2F3F5;
   --font:'Lato',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;font-family:var(--font);font-size:16px;line-height:1.5;color:var(--body);background:#F7F7F7}
-h1,h2,h3,h4,p,ul,ol,figure,table{margin:0}
+body{margin:0;font-family:var(--font);font-size:16px;line-height:1.5;color:var(--body);background:var(--page)}
+h1,h2,h3,h4,p,ul,ol,figure,table,dl,dd{margin:0}
 ul{padding:0;list-style:none}
 button{font-family:inherit;cursor:pointer}
 a{color:var(--navy)}
 img{max-width:100%}
+[hidden]{display:none !important}
 :focus-visible{outline:2px solid var(--navy);outline-offset:2px}
 .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms !important;animation-duration:.01ms !important}}
 
 /* ============================================================
-   PROTOTYPE CHROME — view switcher + annotations.
+   PROTOTYPE CHROME
    ============================================================ */
 .proto-bar{position:sticky;top:0;z-index:200;background:#14181D;color:#B9C0C9;font-size:13px;
   display:flex;align-items:center;gap:6px;padding:8px 16px;flex-wrap:wrap}
@@ -77,15 +83,15 @@ img{max-width:100%}
 .view{display:none}
 .view.on{display:block}
 .wrap{max-width:1280px;margin:0 auto;padding:0 24px}
+.wrap-narrow{max-width:768px;margin:0 auto;padding:0 24px}
 
 .state-chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:14px 0 2px}
-.state-chips .lbl{font-size:12px;color:var(--helper);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.state-chips .lbl{font-size:13px;color:var(--helper);font-weight:700}
 .chip{border:1px solid var(--rule-strong);background:#fff;border-radius:20px;padding:6px 14px;font-size:13px;color:var(--body)}
 .chip:hover{border-color:var(--navy)}
 .chip.on{border-color:var(--navy);background:var(--navy);color:#fff;font-weight:700}
-/* the chip rail stays above the scrim so modal states remain switchable */
-body.modal-open #view-pdp .chipdeck{position:relative;z-index:160;background:#F7F7F7;
-  box-shadow:0 6px 0 6px #F7F7F7;border-radius:4px}
+body.modal-open #view-pdp .chipdeck{position:relative;z-index:160;background:var(--page);
+  box-shadow:0 6px 0 6px var(--page);border-radius:4px}
 
 .ann{display:none;position:absolute;z-index:60}
 body.show-ann .ann{display:inline-flex;align-items:flex-start}
@@ -100,24 +106,19 @@ body.show-ann .ann-list{display:block}
 .ann-list b{color:#8A5B00}
 .ann-list li{margin:5px 0 5px 20px;list-style:disc}
 .ann-list .hd{display:block;margin-bottom:6px;color:#14181D;font-weight:700;font-size:14px}
-/* modal annotations ride beside the dialog rather than under the scrim */
-.modal-ann{position:fixed;left:16px;top:calc(var(--chrome,0px) + 16px);width:290px;z-index:160;
+.modal-ann{position:fixed;left:16px;top:calc(var(--chrome,0px) + 16px);width:272px;z-index:160;
   max-height:calc(100vh - var(--chrome,0px) - 40px);overflow:auto;margin:0}
 .modal-ann,body.show-ann .modal-ann{display:none}
 body.show-ann.modal-open .modal-ann.on{display:block}
 body.modal-open #annPdp{display:none !important}
 
 /* ============================================================
-   PP COMPONENT LAYER — new PDP (Tailwind) system as hand-written CSS
+   SHARED COMPONENT LAYER
    ============================================================ */
-.card{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:20px}
-.card + .card{margin-top:16px}
-.card-hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
-.card-hd h2{font-size:18px;line-height:24px;font-weight:700;color:var(--ink)}
-.linkbtn{background:none;border:0;padding:0;font-size:13px;font-weight:700;color:var(--navy);
+.linkbtn{background:none;border:0;padding:0;font-size:15px;font-weight:700;color:var(--navy);
   text-decoration:underline;text-underline-offset:2px}
 .linkbtn:hover{text-decoration:none}
-.linkbtn.lg{font-size:14px}
+.linkbtn.sm{font-size:14px}
 .step-h{display:flex;align-items:center;gap:8px;font-size:18px;line-height:24px;font-weight:700;color:var(--ink);margin-bottom:10px}
 .step-h .num{color:var(--orange);font-weight:700}
 
@@ -131,28 +132,110 @@ body.modal-open #annPdp{display:none !important}
   transition:background .15s,color .15s;text-align:center}
 .btn-outline:hover:not(:disabled){background:var(--navy);color:#fff}
 .btn-outline:disabled{border-color:var(--rule-strong);color:var(--disabled-text);background:#fff;cursor:default}
-.btn-ghost{display:inline-flex;align-items:center;gap:8px;justify-content:center;min-height:44px;padding:10px 14px;
-  background:#fff;color:var(--navy);border:1px solid var(--rule-strong);border-radius:4px;font-size:14px;font-weight:700}
-.btn-ghost:hover{border-color:var(--navy)}
-.btn-ghost svg{flex:none}
-.reason{font-size:13px;color:var(--body);text-align:center;margin-top:8px;line-height:1.4}
+.btn-mini{background:#fff;border:1px solid var(--navy);color:var(--navy);border-radius:4px;
+  font-size:14px;font-weight:700;padding:8px 18px;min-height:40px}
+.btn-mini:hover{background:var(--navy);color:#fff}
+.reason{font-size:14px;color:var(--body);text-align:center;margin-top:8px;line-height:1.45}
+.promise{font-size:14px;color:var(--body);text-align:center;margin-top:10px;line-height:1.45}
 
-.lbl{display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:5px}
+.lbl{display:block;font-size:14px;font-weight:700;color:var(--ink);margin-bottom:6px}
 .lbl .opt{font-weight:400;color:var(--helper)}
 input[type=text],input[type=email],input[type=tel],input[type=date],input[type=number],select{
   width:100%;height:50px;border:1px solid var(--input-border);border-radius:4px;padding:8px 14px;
-  font-family:inherit;font-size:15px;color:var(--ink);background:#fff;appearance:none;-webkit-appearance:none}
+  font-family:inherit;font-size:16px;color:var(--ink);background:#fff;appearance:none;-webkit-appearance:none}
 select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%23525252' stroke-width='2' fill='none'/></svg>");
   background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
 input::placeholder{color:#8C8C8C}
 input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;border-color:var(--navy)}
 .field{margin-bottom:16px}
 .field.err input,.field.err select{border:1px solid var(--error)}
-.errmsg{display:none;font-size:15px;color:var(--error-text);margin-top:5px;font-weight:400}
+.errmsg{display:none;font-size:15px;font-weight:400;color:var(--error-text);margin-top:5px}
 .field.err .errmsg{display:block}
-.note{font-size:13px;color:var(--helper);margin-top:5px;line-height:1.45}
+.note{font-size:14px;color:var(--helper);margin-top:5px;line-height:1.45}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
 
+.band{border-radius:6px;padding:12px 14px;font-size:15px;line-height:1.5;display:flex;gap:10px;align-items:flex-start}
+.band svg{flex:none;margin-top:4px}
+.band-info{background:var(--info-bg);border:1px solid var(--info-rule);color:var(--info-ink)}
+.band-amber{background:var(--amber-bg);border:1px solid var(--amber-rule);color:var(--amber-ink)}
+.band-green{background:var(--green-bg);border:1px solid var(--green-rule);color:var(--green-ink)}
+.band-err{background:#FEF2F2;border:1px solid #F5B4B4;color:#8A1111;display:block}
+.band .linkbtn{color:inherit;font-weight:700}
+
+.thumb{width:72px;height:72px;flex:none;border-radius:6px;background:var(--gray-bg);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.thumb.sm{width:56px;height:56px}
+a.thumb:hover{background:var(--wash)}
+
+.site-head{background:#fff;border-bottom:1px solid var(--rule)}
+.site-head-in{max-width:1280px;margin:0 auto;padding:0 24px;height:80px;display:flex;align-items:center;gap:16px}
+.site-head .hd-title{flex:1;text-align:center;font-size:18px;font-weight:700;color:var(--ink)}
+.logo{flex:none;font-weight:700;font-size:20px;color:var(--navy);letter-spacing:-.01em;line-height:1.1}
+.logo .o{color:var(--orange)}
+.logo .tag{display:block;font-size:9px;font-weight:400;color:var(--body);margin-top:1px}
+
+/* the money block — one shape in C, on page D and on the quote document */
+.money .k{font-size:15px;font-weight:700;color:var(--ink)}
+.money .amt{display:block;font-size:30px;font-weight:700;color:var(--ink);line-height:1.15;margin-top:2px}
+.money .ea{font-size:15px;color:var(--body)}
+.money .ea b{color:var(--ink);font-weight:700}
+.money .linkbtn{margin-top:10px}
+.disclose-body{display:none;margin-top:14px;padding-top:12px;border-top:1px solid var(--rule)}
+.disclose-body.open{display:block}
+
+/* production "Price breakdown" rows, captured 2026-09-03 */
+.bd-row{display:grid;grid-template-columns:1fr auto auto auto;gap:0 14px;align-items:baseline;
+  padding:8px 0;font-size:15px}
+.bd-row .lab{color:var(--ink)}
+.bd-row .q,.bd-row .u{color:var(--body);font-size:14px;text-align:right;white-space:nowrap}
+.bd-row .amt{color:var(--ink);font-weight:700;text-align:right;white-space:nowrap}
+.bd-row.lo{padding:3px 0}
+.bd-row.lo .lab{color:var(--body)}
+.bd-row.lo .lab b{color:var(--ink)}
+.bd-tot{display:flex;justify-content:space-between;gap:14px;align-items:baseline;padding:12px 0 0;
+  border-top:1px solid var(--rule);margin-top:8px}
+.bd-tot .k,.bd-tot .v{font-size:17px;font-weight:700;color:var(--ink)}
+.bd-avg{display:flex;justify-content:space-between;gap:14px;font-size:14px;color:var(--body);margin-top:4px}
+.bd-foot{font-size:14px;color:var(--helper);line-height:1.5;margin-top:12px}
+.free{color:var(--green-ink);font-weight:700}
+
+.sp-block{border-left:3px solid var(--amber-rule);padding:2px 0 2px 14px;margin:16px 0}
+.sp-block h3{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.sp-block p{font-size:15px;color:var(--body);line-height:1.5}
+.sp-confirm{border-left:3px solid var(--green-rule);padding:2px 0 2px 16px}
+.sp-confirm h2{font-size:21px;font-weight:700;color:var(--green-ink);margin-bottom:8px}
+.sp-confirm p{font-size:16px;color:#14532D;line-height:1.55}
+.rorow{display:flex;justify-content:space-between;gap:16px;padding:7px 0;font-size:15px}
+.rorow .k{color:var(--body)}
+.rorow .v{color:var(--ink);font-weight:700;text-align:right}
+/* ============================================================
+   V1 — PDP (unchanged from R4 apart from the readability tokens)
+   ============================================================ */
+.card{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:20px}
+.pdp-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:24px 0 48px;align-items:start}
+.pdp-grid > *{min-width:0}
+.pdp-gallery{border:1px solid var(--rule);border-radius:6px;background:#fff;padding:28px;display:flex;align-items:center;justify-content:center;min-height:420px}
+.sku{font-size:13px;color:var(--helper);margin-bottom:6px}
+.pdp-h1{font-size:24px;line-height:32px;font-weight:700;color:var(--ink);margin-bottom:10px}
+.blurb{border-left:3px solid var(--orange);padding-left:12px;font-size:15px;color:var(--body);margin-bottom:12px}
+.pdp-desc{font-size:15px;color:var(--body);margin-bottom:20px;max-width:66ch}
+.pdp-sec{margin-bottom:20px}
+.qty-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+.subtotal-box{border-left:3px solid var(--orange);background:#fff;padding:12px 0 12px 14px;margin:18px 0;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.subtotal-box .amt{font-size:26px;font-weight:700;color:var(--ink);line-height:1.1}
+.subtotal-box .sub{font-size:13px;color:var(--helper)}
+.recap{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;color:var(--body);margin-bottom:14px}
+.recap b{color:var(--ink)}
+.keyfacts{border:1px solid var(--rule);border-radius:6px;background:#fff;padding:16px 18px;margin-top:20px}
+.keyfacts h2{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:10px}
+.keyfacts li{font-size:14px;color:var(--body);margin-bottom:7px;padding-left:22px;position:relative;line-height:1.45}
+.keyfacts li::before{content:"\2713";position:absolute;left:0;color:var(--ink);font-weight:700}
+.keyfacts li b{color:var(--ink)}
+.leadrow{position:relative;margin-bottom:12px}
+.leadrow .pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.leadrow .helper{font-size:13px;color:var(--helper);text-align:right;margin-top:6px}
+.askrow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:13.5px;color:var(--body)}
+.askrow .secure{display:inline-flex;align-items:center;gap:6px;color:var(--navy);font-weight:700}
 .swatches{display:flex;gap:10px;flex-wrap:wrap}
 .swatch{position:relative;width:44px;height:44px;flex:none;border-radius:9999px;padding:2px;background:none;border:0;
   box-shadow:0 0 0 1px var(--swatch-rule);transition:box-shadow .15s}
@@ -160,10 +243,10 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
 .swatch[aria-checked=true]{box-shadow:0 0 0 1px #fff,0 0 0 3px var(--orange)}
 .swatch span{display:block;width:100%;height:100%;border-radius:9999px;border:1px solid rgba(0,0,0,.1)}
 .swatch-name{font-size:14px;color:var(--body);margin-top:8px}
-
-/* --- production price-tier table (library) with the captured orange selection box --- */
-/* min-width:0 + its own BFC keeps the table's min-content out of the grid track,
-   so the tier rail scrolls instead of widening the page */
+.cbx{display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin-top:12px}
+.cbx input{margin:0;width:20px;height:20px;flex:none;accent-color:var(--orange);margin-top:2px}
+.cbx span{font-size:15px;color:var(--ink)}
+/* production price-tier table — lives on the PDP only now */
 .tier-rail{position:relative;overflow:hidden;min-width:0}
 .tier-rail.scrollable::after{content:"";position:absolute;top:0;right:0;bottom:0;width:40px;pointer-events:none;
   background:linear-gradient(to right,rgba(255,255,255,0),#fff 72%);transition:opacity .15s}
@@ -179,272 +262,158 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
 .tier tr:last-child td.sel{border-top-color:transparent;border-radius:0 0 4px 4px}
 .tier td.sel button{font-weight:700;color:var(--ink)}
 
-.band{border-radius:6px;padding:12px 14px;font-size:14px;line-height:1.5;display:flex;gap:10px;align-items:flex-start}
-.band svg{flex:none;margin-top:3px}
-.band-info{background:var(--info-bg);border:1px solid var(--info-rule);color:var(--info-ink)}
-.band-amber{background:var(--amber-bg);border:1px solid var(--amber-rule);color:var(--amber-ink)}
-.band-green{background:var(--green-bg);border:1px solid var(--green-rule);color:var(--green-ink)}
-.band-err{background:#FEF2F2;border:1px solid #F5B4B4;color:#8A1111;display:block}
-.band .linkbtn{color:inherit;font-weight:700}
-
-.site-head{background:#fff;border-bottom:1px solid var(--rule)}
-.site-head-in{max-width:1280px;margin:0 auto;padding:0 24px;height:94px;display:flex;align-items:center;gap:16px}
-.site-head .hd-title{flex:1;text-align:center;font-size:20px;font-weight:700;color:var(--ink)}
-.logo{flex:none;font-weight:700;font-size:20px;color:var(--navy);letter-spacing:-.01em;line-height:1.1}
-.logo .o{color:var(--orange)}
-.logo .tag{display:block;font-size:9px;font-weight:400;color:var(--body);margin-top:1px}
-
 /* ============================================================
-   V1 — PDP
-   ============================================================ */
-.pdp-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:24px 0 48px;align-items:start}
-/* a grid item's automatic minimum is min-content, and the tier table's min-content is
-   wider than a phone. Zeroing it lets the track shrink and the tier rail scroll instead. */
-.pdp-grid > *,.q-grid > *{min-width:0}
-.pdp-gallery{border:1px solid var(--rule);border-radius:6px;background:#fff;padding:28px;display:flex;align-items:center;justify-content:center;min-height:420px}
-.sku{font-size:13px;color:var(--helper);margin-bottom:6px}
-.pdp-h1{font-size:24px;line-height:32px;font-weight:700;color:var(--ink);margin-bottom:10px}
-.blurb{border-left:3px solid var(--orange);padding-left:12px;font-size:15px;color:var(--body);margin-bottom:12px}
-.pdp-desc{font-size:15px;color:var(--body);margin-bottom:20px;max-width:66ch}
-.pdp-sec{margin-bottom:20px}
-.qty-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
-.subtotal-box{border-left:3px solid var(--orange);background:#fff;padding:12px 0 12px 14px;margin:18px 0;
-  display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
-.subtotal-box .amt{font-size:26px;font-weight:700;color:var(--ink);line-height:1.1}
-.subtotal-box .sub{font-size:13px;color:var(--helper)}
-.recap{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;color:var(--body);margin-bottom:14px}
-.recap b{color:var(--ink)}
-.recap .num{color:var(--orange);font-weight:700}
-.keyfacts{border:1px solid var(--rule);border-radius:6px;background:#fff;padding:16px 18px;margin-top:20px}
-.keyfacts h2{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:10px}
-.keyfacts li{font-size:14px;color:var(--body);margin-bottom:7px;padding-left:22px;position:relative;line-height:1.45}
-.keyfacts li::before{content:"\2713";position:absolute;left:0;color:var(--ink);font-weight:700}
-.keyfacts li b{color:var(--ink)}
-.leadrow{position:relative;margin-bottom:12px}
-.leadrow .pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.leadrow .helper{font-size:13px;color:var(--helper);text-align:right;margin-top:6px}
-.askrow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:13.5px;color:var(--body)}
-.askrow .secure{display:inline-flex;align-items:center;gap:6px;color:var(--navy);font-weight:700}
-.thumb{width:72px;height:72px;flex:none;border:1px solid var(--rule);border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.thumb.sm{width:56px;height:56px}
-.thumb.xs{width:40px;height:40px;border-radius:4px}
-
-/* ============================================================
-   V2 / V3 — the two request modals.
-   C is 480px and flows; D is 640px with a pinned footer.
-   Both become full-screen sheets below 960px (100dvh flex column,
-   footer a flex child so an on-screen keyboard cannot detach it).
+   V2 — MODAL C. Wide (760px) and two-column so the whole thing
+   fits above the fold at 1280x800 with no vertical scroll.
    ============================================================ */
 .modal-back{position:fixed;left:0;right:0;bottom:0;top:var(--chrome,0px);background:rgba(0,0,0,.5);z-index:150;
-  display:none;align-items:flex-start;justify-content:center;padding:28px 16px}
+  display:none;align-items:flex-start;justify-content:center;padding:20px 16px}
 .modal-back.open{display:flex}
-.modal{background:#fff;width:640px;max-width:100%;max-height:min(88vh,100%);border:1px solid var(--rule-strong);border-radius:6px;
-  display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.3)}
-.modal.lean{width:480px}
-.modal-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--rule);flex:none}
-.modal-hd h2{font-size:20px;font-weight:700;color:var(--ink)}
+.modal{background:#fff;width:760px;max-width:100%;max-height:calc(100vh - var(--chrome,0px) - 40px);
+  border-radius:8px;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.3)}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 28px 12px;flex:none}
+.modal-hd h2{font-size:21px;font-weight:700;color:var(--ink)}
 .modal-x{background:none;border:0;padding:6px;color:var(--body);line-height:0;border-radius:4px}
+#cDialog:focus{outline:none}
 .modal-x:hover{background:var(--gray-bg)}
-.modal-body{overflow-y:auto;padding:20px;flex:1 1 auto}
-.modal-ft{flex:none;border-top:1px solid var(--rule);padding:14px 20px;background:#fff}
-.modal-ft .row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:10px}
-.modal-ft .row .k{font-size:15px;font-weight:700;color:var(--ink)}
-.modal-ft .row .v{font-size:22px;font-weight:700;color:var(--ink)}
-.modal-ft .row .ea{font-size:14px;font-weight:400;color:var(--body);margin-left:8px}
-.rorow{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--rule);font-size:14px}
-.rorow:last-child{border-bottom:0}
-.rorow .k{color:var(--body)}
-.rorow .v{color:var(--ink);font-weight:700;text-align:right}
+.modal-body{overflow-y:auto;padding:0 28px 20px;flex:1 1 auto}
+/* two columns: what you are quoting, and who it goes to */
+.c-cols{display:grid;grid-template-columns:1fr 296px;gap:32px;align-items:start}
+.c-cols > *{min-width:0}
+.c-head{display:flex;gap:16px;align-items:center}
+.c-name{font-size:18px;font-weight:700;color:var(--ink);line-height:1.3}
+.c-config{font-size:16px;color:var(--body);margin-top:14px;line-height:1.6}
+.c-config b{color:var(--ink);font-weight:700}
+.c-change{margin-top:10px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.c-change .note{margin:0}
+.c-money{margin-top:20px;padding-top:18px;border-top:1px solid var(--rule)}
+.c-right .field:last-of-type{margin-bottom:12px}
+/* below 960 the CTA block moves out of the right column and becomes a real flex
+   child of the dialog, so an on-screen keyboard cannot detach it and it never
+   paints over the two fields the way a sticky footer inside the body did */
+.modal-ft{flex:none;background:#fff;border-top:1px solid var(--rule);padding:14px 28px 18px}
+.modal-ft:empty{display:none}
+.c-privacy{font-size:14px;color:var(--helper);line-height:1.45;margin-bottom:16px}
+.escape{margin-top:14px;padding-top:14px;border-top:1px solid var(--rule);font-size:15px;color:var(--body)}
 
-/* Option C — the configuration reads as one sentence, not a table of rows */
-.c-sum{display:flex;gap:12px;align-items:flex-start;margin-bottom:6px}
-.c-sum .txt{font-size:15px;color:var(--ink);line-height:1.5}
-.c-sum .txt b{font-weight:700}
-.c-change{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.c-total{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:14px 0;margin-bottom:6px}
-.c-total .amt{font-size:28px;font-weight:700;color:var(--ink);line-height:1.1}
-.c-total .k{font-size:13px;font-weight:700;color:var(--ink);display:block;margin-bottom:2px}
-.c-total .ea{font-size:14px;color:var(--body);margin-left:10px}
-.disclose{margin:10px 0 0}
-.disclose-body{display:none;margin-top:12px;border:1px solid var(--rule);border-radius:6px;padding:12px 14px;background:#FCFCFC}
-.disclose-body.open{display:block}
-.li{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--rule);font-size:14px;align-items:flex-start}
-.li:last-child{border-bottom:0}
-.li .k{color:var(--body);line-height:1.45}
-.li .k b{color:var(--ink);font-weight:700;display:block}
-.li .k .ea{color:var(--helper);font-size:13px}
-.li .v{color:var(--ink);font-weight:700;white-space:nowrap}
-.li.muted .v{color:var(--body);font-weight:400;font-size:13.5px;text-align:right;white-space:normal}
-.li.sub{border-bottom:1px solid var(--rule-strong)}
-.li.tot{border-bottom:0;padding-top:12px}
-.li.tot .k b,.li.tot .v{font-size:17px}
-.trust{font-size:13px;color:var(--body);line-height:1.45;background:var(--gray-bg);border-radius:6px;padding:10px 12px;margin-top:10px}
-.promise{font-size:13.5px;color:var(--body);text-align:center;margin-top:10px;line-height:1.45}
-.tipwrap{position:relative;display:inline-flex}
-.tipbtn{background:none;border:0;padding:0 0 0 5px;color:var(--navy);line-height:1}
-.tipbox{display:none;position:absolute;left:0;top:22px;width:230px;background:#14181D;color:#fff;font-size:12px;
-  line-height:1.45;padding:8px 10px;border-radius:4px;z-index:20;font-weight:400}
-.tipwrap:hover .tipbox,.tipwrap:focus-within .tipbox{display:block}
-.escape{text-align:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--body)}
+/* ============================================================
+   V3 — PAGE D. A page, not a modal: 720px measure, generous
+   leading, two type sizes in the card, controls behind Change.
+   ============================================================ */
+.d-page{padding:28px 0 72px}
+.d-h1{font-size:30px;line-height:1.25;font-weight:700;color:var(--ink)}
+.d-lede{font-size:16px;color:var(--body);margin-top:8px;max-width:60ch}
+.d-card{background:#fff;border-radius:8px;padding:24px 26px;margin-top:24px}
+.d-card-hd{display:flex;gap:16px;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--rule)}
+.d-card-hd .pname{font-size:16px;font-weight:700;color:var(--navy);text-decoration:underline;text-underline-offset:3px;line-height:1.35}
+.d-card-hd .pname:hover{text-decoration:none}
+.d-card-hd .psku{font-size:15px;color:var(--helper);margin-top:3px}
+.vrows{padding-top:6px}
+.vrow{padding:14px 0}
+.vrow-main{display:flex;align-items:baseline;gap:16px}
+.vrow-k{font-size:16px;color:var(--body);flex:0 0 168px}
+.vrow-v{font-size:16px;font-weight:700;color:var(--ink);flex:1 1 auto}
+.vrow-main .linkbtn{flex:none;font-size:16px}
+.vrow-main .ro-hint{flex:none;font-size:15px;color:var(--helper)}
+.vrow-ctl{margin:14px 0 2px 0;background:var(--gray-bg);border-radius:6px;padding:18px}
+.vrow-ctl .lbl{font-size:15px}
+.ctl-line{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.ctl-line input[type=number]{width:160px}
+.ctl-hint{font-size:15px;color:var(--body);margin-top:10px}
+.ctl-done{margin-top:16px}
+.opts{display:flex;flex-direction:column;gap:2px}
+.opt{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;border-radius:6px;cursor:pointer;background:#fff}
+.opt:hover{background:var(--wash)}
+.opt input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--orange);flex:none}
+.opt .t{display:block;font-size:16px;font-weight:700;color:var(--ink);line-height:1.35}
+.opt .m{display:block;font-size:15px;color:var(--body);margin-top:1px}
+.d-money{margin-top:26px;padding-top:22px;border-top:1px solid var(--rule)}
+.d-form{margin-top:28px}
+.d-notice{margin-top:14px}
 
-/* --- production configurator controls, captured 2026-09-03 (screenshots
-       2026-09-03-configurator-method / -location / -quantity). Numeral step
-       badges and the step checkmark are dropped: D is not the four-step wizard. --- */
-.step-bar{background:var(--step-bar);color:#fff;font-size:16px;font-weight:700;padding:9px 14px;border-radius:3px;
-  margin:0 0 12px;display:flex;align-items:center;gap:10px}
-.step-bar .n{font-size:16px;font-weight:700;opacity:.75}
-/* production "Price breakdown" dialog rows, captured 2026-09-03 */
-.bd-row{display:grid;grid-template-columns:1fr auto auto auto;gap:0 14px;align-items:baseline;
-  padding:9px 0;border-bottom:1px solid var(--rule);font-size:14px}
-.bd-row .lab{color:var(--ink)}
-.bd-row .q,.bd-row .u{color:var(--body);font-size:13.5px;text-align:right;white-space:nowrap}
-.bd-row .amt{color:var(--ink);font-weight:700;text-align:right;white-space:nowrap}
-.bd-row.lo{border-bottom:0;padding:5px 0}
-.bd-row.lo .lab{color:var(--body)}
-.bd-row.lo .lab b{color:var(--ink)}
-.bd-tot{display:flex;justify-content:space-between;gap:14px;align-items:baseline;padding:14px 0 0;
-  border-top:1px solid var(--rule-strong);margin-top:8px}
-.bd-tot .k,.bd-tot .v{font-size:16px;font-weight:700;color:var(--ink)}
-.bd-avg{display:flex;justify-content:space-between;gap:14px;font-size:13px;color:var(--body);margin-top:4px}
-.bd-foot{font-size:13px;color:var(--body);line-height:1.5;margin-top:12px}
-.free{color:var(--green-ink);font-weight:700}
-.incl-note{display:flex;gap:8px;align-items:flex-start;background:var(--green-bg);border:1px solid var(--green-rule);
-  color:var(--green-ink);border-radius:4px;padding:10px 12px;font-size:13.5px;line-height:1.45;margin-top:12px}
-.pms-row{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--ink);margin-bottom:12px}
-.cbx{display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin-top:12px}
-.cbx input{margin:0;width:20px;height:20px;flex:none;accent-color:var(--orange);margin-top:1px}
-.cbx span{font-size:14px;color:var(--ink)}
-.d-sec{margin-bottom:22px}
-.inline-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-.inline-field{border:1px solid var(--input-border);border-radius:4px;height:50px;display:flex;align-items:center;
-  gap:8px;padding:0 12px;background:#fff}
-.inline-field.ro{background:var(--gray-bg)}
-.inline-field .k{font-size:15px;color:var(--body);white-space:nowrap}
-.inline-field .v{font-size:15px;font-weight:700;color:var(--ink)}
-.inline-field input{border:0;height:auto;padding:0;font-size:15px;font-weight:700;color:var(--ink);background:none;width:100%}
-.inline-field input:focus{outline:2px solid var(--navy);outline-offset:2px}
-.inline-field.err{border-color:var(--error)}
-.method-list{display:flex;flex-direction:column;gap:10px}
-.method-opt{display:block;width:100%;text-align:left;background:#fff;border:1px solid #EEEEEE;border-radius:8px;
-  padding:12px 16px;font-size:15px;font-weight:700;color:var(--ink);transition:border-color .15s,background .15s}
-.method-opt:hover{border-color:var(--rule-strong)}
-.method-opt[aria-pressed=true]{border:2px solid var(--orange);background:rgba(254,80,0,.05);padding:11px 15px}
-.method-opt .sub{display:block;font-size:13px;font-weight:400;color:var(--body);margin-top:3px}
-.badge{display:inline-block;background:var(--gray-bg);border-radius:3px;padding:4px 10px;font-size:13px;color:var(--body);margin-top:12px}
-.charges{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:12px}
-.charges th{text-align:left;font-size:12px;font-weight:700;color:var(--body);text-transform:uppercase;letter-spacing:.04em;
-  padding:0 8px 6px 0;border-bottom:1px solid var(--rule)}
-.charges th.r,.charges td.r{text-align:right;padding-right:0}
-.charges td{padding:8px 8px 8px 0;border-bottom:1px solid var(--rule);color:var(--ink)}
-.charges tr:last-child td{border-bottom:0}
-.imprint-box{border:1px dashed var(--orange);border-radius:4px;padding:14px;margin-top:12px}
-.imprint-box .lbl{margin-bottom:6px}
-.imprint-cost{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--gray-bg);
-  border-radius:4px;padding:10px 12px;margin-top:10px;font-size:14px;color:var(--ink)}
-.imprint-cost .c{color:var(--body)}
-.d-subtotal{border-left:3px solid var(--orange);background:#fff;padding:12px 0 12px 14px;margin-top:18px;
-  display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
-.d-subtotal .amt{font-size:22px;font-weight:700;color:var(--ink);line-height:1.1}
-.d-subtotal .sub{font-size:13px;color:var(--helper)}
-.provisional{font-size:12.5px;color:var(--amber-ink);background:var(--amber-bg);border:1px solid var(--amber-rule);
-  border-radius:4px;padding:6px 10px;margin-top:10px;line-height:1.45}
+/* ============================================================
+   V4 — QUOTE DOCUMENT, simplified. One column, no line-item table.
+   ============================================================ */
+.q-page{padding:20px 0 64px}
+.q-invalid{background:#fff;border-radius:8px;padding:40px 28px;text-align:center}
+.q-invalid h1{font-size:24px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.q-invalid p{font-size:16px;color:var(--body);max-width:52ch;margin:0 auto}
+.q-invalid .btn-outline{max-width:280px;margin:20px auto 0}
+.q-arrival{border-left:3px solid var(--green-ink);background:var(--green-bg);color:var(--green-ink);
+  padding:12px 16px;border-radius:0 6px 6px 0;margin-bottom:16px;font-size:15px;line-height:1.5}
+.q-doc{background:#fff;border-radius:8px;padding:28px 32px}
+.q-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.q-hd h1{font-size:28px;line-height:1.2;font-weight:700;color:var(--ink)}
+.q-status{font-size:14px;font-weight:700;border-radius:20px;padding:4px 12px;white-space:nowrap;
+  background:var(--green-bg);color:var(--green-ink)}
+.q-status.expiring{background:var(--amber-bg);color:var(--amber-ink)}
+.q-status.expired{background:var(--gray-bg);color:var(--gray-ink)}
+.q-status.ordered{background:var(--info-bg);color:var(--info-ink)}
+.q-sub{font-size:16px;color:var(--body);margin-top:8px;line-height:1.6}
+.q-sub b{color:var(--ink);font-weight:700}
+.revstamp{font-size:14px;color:var(--helper);margin-top:8px;line-height:1.5}
+.revstamp b{color:var(--body);font-weight:700}
+.q-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:22px 0 0}
+.q-actions .btn-primary{width:auto;min-width:216px;min-height:50px;font-size:18px}
+.q-actions .actlink{background:none;border:0;padding:8px 4px;font-size:15px;font-weight:700;color:var(--navy);
+  display:inline-flex;align-items:center;gap:7px;border-radius:4px}
+.q-actions .actlink:hover{text-decoration:underline;text-underline-offset:2px}
+.q-cta-help{font-size:14px;color:var(--helper);margin-top:8px;padding-bottom:20px;border-bottom:1px solid var(--rule)}
 
-/* specialist block, shared by C and D */
-.sp-block{border:1px solid var(--rule-strong);border-radius:6px;padding:16px;background:var(--gray-bg)}
-.sp-block h3{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:6px}
-.sp-block p{font-size:14px;color:var(--body);line-height:1.5}
-.sp-confirm{border:1px solid var(--green-rule);background:var(--green-bg);border-radius:6px;padding:20px}
-.sp-confirm h2{font-size:20px;font-weight:700;color:var(--green-ink);margin-bottom:8px}
-.sp-confirm p{font-size:15px;color:#14532D;line-height:1.55}
+/* collapsed product row — the whole row is the disclosure control */
+.prow{width:100%;background:none;border:0;padding:18px 0;display:flex;gap:16px;align-items:center;text-align:left}
+.prow:hover .prow-name{text-decoration:underline;text-underline-offset:3px}
+.prow-mid{flex:1 1 auto;min-width:0}
+.prow-name{display:block;font-size:17px;font-weight:700;color:var(--ink);line-height:1.35}
+.prow-cfg{display:block;font-size:15px;color:var(--body);margin-top:3px}
+.prow-money{text-align:right;flex:none}
+.prow-money .k{display:block;font-size:14px;color:var(--body);line-height:1.3}
+.prow-money .v{display:block;font-size:20px;font-weight:700;color:var(--ink);line-height:1.2}
+.prow-chev{flex:none;color:var(--navy);transition:transform .15s}
+.prow[aria-expanded=true] .prow-chev{transform:rotate(180deg)}
+.prow-body{padding:4px 0 20px}
+.pkv{display:grid;grid-template-columns:168px 1fr;gap:8px 20px;font-size:16px;margin-bottom:20px}
+.pkv dt{color:var(--body)}
+.pkv dd{color:var(--ink);font-weight:700}
+.plink{margin-top:14px;font-size:15px}
 
-/* delivery block — now lives only on the quote page */
+/* totals */
+.totals{border-top:1px solid var(--rule);padding-top:20px}
+.trow{display:flex;justify-content:space-between;gap:20px;align-items:baseline;padding:7px 0;font-size:16px}
+.trow .k{color:var(--body)}
+.trow .k b{color:var(--ink);font-weight:700}
+.trow .v{color:var(--ink);font-weight:700;text-align:right;white-space:nowrap}
+.trow .v.soft{color:var(--body);font-weight:400;white-space:normal}
+.trow.grand{border-top:1px solid var(--rule);margin-top:10px;padding-top:16px}
+.trow.grand .k{font-size:19px;font-weight:700;color:var(--ink)}
+.trow.grand .v{font-size:26px}
+.tnote{font-size:15px;color:var(--helper);margin-top:12px;line-height:1.5;max-width:70ch}
+
+/* delivery */
+.q-block{margin-top:26px;padding-top:22px;border-top:1px solid var(--rule)}
+.q-block h2{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:10px}
+.del-form{margin-top:18px;padding-left:30px}
 .addr-auto{position:relative}
 .addr-sugg{position:absolute;top:52px;left:0;right:0;background:#fff;border:1px solid var(--input-border);
   border-radius:4px;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:30;display:none;overflow:hidden}
 .addr-sugg.open{display:block}
-.addr-sugg button{display:block;width:100%;text-align:left;background:none;border:0;padding:11px 14px;font-size:14px;color:var(--ink)}
+.addr-sugg button{display:block;width:100%;text-align:left;background:none;border:0;padding:11px 14px;font-size:15px;color:var(--ink)}
 .addr-sugg button:hover{background:var(--wash)}
-.ship-opt{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--rule);border-radius:6px;padding:14px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
-.ship-opt:hover{border-color:var(--rule-strong)}
-.ship-opt.sel{border-color:var(--orange);background:var(--wash)}
-.ship-opt input{width:20px;height:20px;margin:1px 0 0;accent-color:var(--orange);flex:none}
-.ship-opt .t{display:block;font-size:15px;font-weight:700;color:var(--ink)}
-.ship-opt .m{display:block;font-size:13.5px;color:var(--body);margin-top:2px}
-.addr-summary{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;border:1px solid var(--rule);border-radius:6px;padding:12px 14px;font-size:14px;color:var(--ink);margin-bottom:14px}
-
-/* ============================================================
-   V4 — quote page
-   ============================================================ */
-.q-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:32px;align-items:start;padding:20px 0 56px}
-.q-invalid{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:40px 28px;text-align:center}
-.q-invalid h1{font-size:22px;font-weight:700;color:var(--ink);margin-bottom:8px}
-.q-invalid p{font-size:15px;color:var(--body);max-width:52ch;margin:0 auto}
-.q-invalid .btn-outline{margin-left:auto;margin-right:auto}
-.q-banner{border-left:4px solid var(--navy);background:#fff;padding:14px 16px;font-size:15px;color:var(--ink);border-radius:0 6px 6px 0;margin-bottom:20px;line-height:1.5}
-.q-banner.expiring{border-left-color:#B8860B;background:var(--amber-bg);color:var(--amber-ink)}
-.q-banner.expired{border-left-color:#8C8C8C;background:var(--gray-bg);color:var(--gray-ink)}
-.q-banner.ordered{border-left-color:#12653A;background:var(--green-bg);color:var(--green-ink)}
-.q-arrival{border-left:4px solid #12653A;background:var(--green-bg);color:var(--green-ink);padding:12px 16px;
-  border-radius:0 6px 6px 0;margin-bottom:14px;font-size:14.5px;line-height:1.5}
-.q-doc{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:28px}
-.q-ref h1{font-size:24px;line-height:32px;font-weight:700;color:var(--ink)}
-.q-meta{font-size:14px;color:var(--body);margin-top:4px}
-.q-meta .dot{margin:0 8px;color:var(--rule-strong)}
-.revstamp{font-size:13px;color:var(--helper);margin-top:6px;line-height:1.5}
-.revstamp b{color:var(--body);font-weight:700}
-.q-sec{margin-top:26px;padding-top:22px;border-top:1px solid var(--rule)}
-.q-sec h2{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:10px}
-.q-sec h2.big{font-size:18px;line-height:24px}
-.q-kv{display:grid;grid-template-columns:180px 1fr;gap:8px 20px;font-size:14.5px}
-.q-kv dt{color:var(--body)}
-.q-kv dd{margin:0;color:var(--ink);font-weight:700}
-.q-note{font-size:13.5px;color:var(--body);margin-top:12px;line-height:1.5;max-width:72ch}
-table.items{width:100%;border-collapse:collapse;font-size:14.5px}
-table.items caption{text-align:left;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:10px}
-table.items th{text-align:left;font-size:12.5px;font-weight:700;color:var(--body);text-transform:uppercase;letter-spacing:.04em;
-  padding:0 10px 8px 0;border-bottom:1px solid var(--rule-strong)}
-table.items th.r,table.items td.r{text-align:right;padding-right:0}
-table.items td{padding:11px 10px 11px 0;border-bottom:1px solid var(--rule);color:var(--ink);vertical-align:top}
-table.items td .m{display:block;font-size:13px;color:var(--body);font-weight:400;margin-top:2px}
-table.items tr.tot td{border-bottom:0;padding-top:16px;font-size:20px;font-weight:700}
-table.items tr.sub td{font-weight:700;border-bottom:1px solid var(--rule-strong)}
-table.items tr.softrow td{color:var(--body)}
-.q-doc.dim table.items,.q-doc.dim .q-kv dd{opacity:.6}
-.asof{font-size:13px;color:var(--helper);margin-top:10px;font-style:normal}
-.terms li{font-size:13.5px;color:var(--body);line-height:1.55;margin-bottom:8px;padding-left:18px;position:relative;max-width:80ch}
-.terms li::before{content:"";position:absolute;left:2px;top:9px;width:5px;height:5px;border-radius:50%;background:var(--rule-strong)}
-.company{font-size:13px;color:var(--helper);margin-top:16px;line-height:1.6}
-.rail{position:sticky;top:24px}
-.rail-card{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:20px;position:relative}
-.rail-total{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:0 0 12px}
-.rail-total .k{font-size:16px;font-weight:700;color:var(--ink)}
-.rail-total .v{font-size:24px;font-weight:700;color:var(--ink)}
-.rail-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}
-.rail-actions .btn-ghost{flex-direction:column;gap:5px;font-size:12.5px;min-height:64px;padding:10px 4px;text-align:center;line-height:1.25}
-.spec-card{border:1px solid var(--rule);border-radius:6px;padding:16px;margin-top:16px;background:#fff}
-.spec-card h3{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px}
-.spec-card h3.big{font-size:15px;margin-bottom:6px}
-.spec-card .who{font-size:15px;font-weight:700;color:var(--ink)}
-.spec-card p{font-size:13.5px;color:var(--body);line-height:1.5;margin-top:4px}
-.spec-card .btn-ghost{width:100%;margin-top:12px}
-.changes{margin-top:16px;padding-top:16px;border-top:1px solid var(--rule)}
-.changes p{font-size:13px;color:var(--helper);margin-top:6px;line-height:1.45}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:32px;background:#14181D;color:#fff;font-size:14px;
+.addr-summary{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;font-size:15px;color:var(--ink);margin-bottom:16px}
+.det-form{margin-top:18px}
+.q-terms li{font-size:15px;color:var(--body);line-height:1.6;margin-bottom:9px;padding-left:18px;position:relative;max-width:78ch}
+.q-terms li::before{content:"";position:absolute;left:2px;top:10px;width:5px;height:5px;border-radius:50%;background:var(--rule-strong)}
+.company{font-size:14px;color:var(--helper);margin-top:18px;line-height:1.6}
+.spec{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap;justify-content:space-between}
+.spec .who{font-size:16px;font-weight:700;color:var(--ink)}
+.spec p{font-size:15px;color:var(--body);margin-top:3px}
+.spec .btn-mini{flex:none}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:32px;background:#14181D;color:#fff;font-size:15px;
   padding:12px 18px;border-radius:4px;z-index:300;display:none}
 .toast.on{display:block}
 
-/* --- the two post-capture modules. Each has its own trigger; there is no
-       single "more options" link (NN/g on separate secondary panels). --- */
-.qmod{border:1px solid var(--rule);border-radius:6px;padding:18px;margin-top:16px;background:#FCFCFC}
-.qmod + .qmod{margin-top:12px}
-.qmod h3{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
-.qmod .qmod-help{font-size:13.5px;color:var(--body);line-height:1.5;max-width:70ch}
-.qmod .btn-outline{max-width:260px;margin-top:12px}
-.qmod-panel{margin-top:16px;padding-top:16px;border-top:1px solid var(--rule)}
-.qmod-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
-
 /* ============================================================
-   V5 — PDF sheet preview
+   V5 — PDF sheet
    ============================================================ */
 .pdf-stage{padding:24px 0 56px;display:flex;flex-direction:column;align-items:center;gap:20px}
 .sheet{width:816px;max-width:100%;min-height:1056px;background:#fff;border:1px solid var(--rule-strong);
@@ -457,15 +426,22 @@ table.items tr.softrow td{color:var(--body)}
 .sheet .pmeta{font-size:12.5px;color:#444;margin-top:3px}
 .sheet .pstamp{font-size:11.5px;color:#444;margin-top:4px}
 .sheet .psec{margin-top:24px}
-.sheet .psec h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#444;margin-bottom:8px}
-.sheet .pkv{display:grid;grid-template-columns:170px 1fr;gap:5px 18px;font-size:12.5px;color:#111}
+.sheet .psec h2{font-size:12.5px;font-weight:700;color:#111;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #C9C9C9}
+.sheet .pkv{display:grid;grid-template-columns:170px 1fr;gap:5px 18px;font-size:12.5px;color:#111;margin:0}
 .sheet .pkv dt{color:#444}
 .sheet .pkv dd{margin:0;font-weight:700}
-.sheet table.items{font-size:12.5px}
-.sheet table.items th{border-bottom:1px solid #868686;color:#444}
-.sheet table.items td{border-bottom:1px solid #C9C9C9;color:#111}
-.sheet table.items tr.tot td{font-size:16px}
-.sheet .terms li{font-size:11.5px;color:#333;max-width:none}
+.sheet .bd-row{font-size:12.5px;padding:5px 0}
+.sheet .bd-row .q,.sheet .bd-row .u{font-size:12px;color:#444}
+.sheet .bd-row .lab,.sheet .bd-row .amt{color:#111}
+.sheet .bd-tot{border-top-color:#868686}
+.sheet .bd-tot .k,.sheet .bd-tot .v{font-size:14px}
+.sheet .bd-avg,.sheet .bd-foot{font-size:11.5px;color:#444}
+.sheet .trow{font-size:12.5px;padding:4px 0}
+.sheet .trow .k,.sheet .trow .v{color:#111}
+.sheet .trow.grand{border-top-color:#868686}
+.sheet .trow.grand .k{font-size:14px}
+.sheet .trow.grand .v{font-size:17px}
+.sheet .q-terms li{font-size:11.5px;color:#333;max-width:none;margin-bottom:6px}
 .sheet .pfoot{margin-top:auto;padding-top:16px;border-top:1px solid #868686;
   display:flex;gap:16px;align-items:center;justify-content:space-between;font-size:11px;color:#444}
 .sheet .pfoot .gen{display:block;color:#555;margin-top:3px}
@@ -478,98 +454,95 @@ table.items tr.softrow td{color:var(--body)}
    V6 — email
    ============================================================ */
 .mail-stage{padding:24px 0 56px;display:flex;flex-direction:column;align-items:center;gap:16px}
-.mail-chrome{width:680px;max-width:100%;background:#fff;border:1px solid var(--rule);border-radius:6px;padding:16px 20px}
+.mail-chrome{width:680px;max-width:100%;background:#fff;border-radius:6px;padding:16px 20px}
 .mail-chrome .subj{font-size:17px;font-weight:700;color:var(--ink);line-height:1.4}
-.mail-chrome .from{font-size:13px;color:var(--helper);margin-top:6px}
-.mail-chrome .pre{font-size:13.5px;color:var(--body);margin-top:8px;padding-top:8px;border-top:1px solid var(--rule)}
-.mail-body{width:600px;max-width:100%;background:#fff;border:1px solid var(--rule);border-radius:0;padding:32px}
-.mail-body p{font-size:15px;color:#333;line-height:1.6;margin-bottom:14px}
-.mail-sum{border:1px solid var(--rule);border-radius:0;margin:20px 0}
-.mail-sum .r{display:flex;justify-content:space-between;gap:16px;padding:10px 14px;border-bottom:1px solid var(--rule);font-size:14px}
-.mail-sum .r:last-child{border-bottom:0}
+.mail-chrome .from{font-size:14px;color:var(--helper);margin-top:6px}
+.mail-chrome .pre{font-size:15px;color:var(--body);margin-top:8px;padding-top:8px;border-top:1px solid var(--rule)}
+.mail-body{width:600px;max-width:100%;background:#fff;border:1px solid var(--rule);padding:32px}
+.mail-body p{font-size:16px;color:#333;line-height:1.6;margin-bottom:14px}
+.mail-sum{margin:20px 0;border-top:1px solid var(--rule)}
+.mail-sum .r{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--rule);font-size:15px}
 .mail-sum .r .k{color:#555}
 .mail-sum .r .v{color:#111;font-weight:700;text-align:right}
-.mail-sum .r.tot{background:#FAFAFA}
-.mail-sum .r.tot .v{font-size:17px;font-weight:700}
-.mail-btn{display:block;background:var(--orange);color:#fff;text-decoration:none;text-align:center;font-size:16px;
-  font-weight:700;padding:0;line-height:44px;height:44px;border-radius:4px;margin:8px 0 18px}
-.mail-attach{display:flex;gap:10px;align-items:center;border:1px solid var(--rule);border-radius:4px;padding:10px 12px;font-size:13.5px;color:#333;margin-bottom:18px}
-.mail-sig{border-top:1px solid var(--rule);padding-top:16px;font-size:13.5px;color:#555;line-height:1.6}
-.mail-foot{width:600px;max-width:100%;font-size:12px;color:var(--helper);text-align:center;line-height:1.5}
+.mail-sum .r.tot .k,.mail-sum .r.tot .v{font-size:17px;font-weight:700;color:#111}
+.mail-btn{display:block;background:var(--orange);color:#fff;text-decoration:none;text-align:center;font-size:17px;
+  font-weight:700;line-height:46px;height:46px;border-radius:4px;margin:8px 0 18px}
+.mail-attach{display:flex;gap:10px;align-items:center;border:1px solid var(--rule);border-radius:4px;padding:10px 12px;font-size:14px;color:#333;margin-bottom:18px}
+.mail-sig{border-top:1px solid var(--rule);padding-top:16px;font-size:14px;color:#555;line-height:1.6}
+.mail-foot{width:600px;max-width:100%;font-size:13px;color:var(--helper);text-align:center;line-height:1.5}
 
 /* ============================================================
    RESPONSIVE — 375px baseline
    ============================================================ */
 .mobile-bar{display:none}
-@media (max-width:1100px){ .modal-ann{display:none !important} }
+@media (max-width:1180px){ .modal-ann{display:none !important} }
 @media (max-width:960px){
-  .wrap{padding:0 16px}
-  .pdp-grid,.q-grid{grid-template-columns:1fr;gap:24px}
+  .wrap,.wrap-narrow{padding:0 16px}
+  .pdp-grid{grid-template-columns:1fr;gap:24px}
   .pdp-gallery{min-height:280px;padding:16px}
-  .grid2,.inline-pair{grid-template-columns:1fr}
-  .rail{position:static}
+  .grid2{grid-template-columns:1fr}
   .site-head-in{height:auto;min-height:64px;padding:12px 16px;flex-wrap:wrap;gap:6px 12px}
-  .site-head .hd-title{order:3;flex:0 0 100%;text-align:left;font-size:15px;font-weight:700}
+  .site-head .hd-title{order:3;flex:0 0 100%;text-align:left;font-size:16px}
   .site-head .linkbtn{margin-left:auto}
-  .q-doc{padding:20px}
-  .q-kv{grid-template-columns:1fr;gap:2px 0}
-  .q-kv dt{font-size:13px}
-  .q-kv dd{margin-bottom:10px}
+  body.modal-open #view-pdp .chipdeck{position:static;z-index:auto;box-shadow:none}
+  /* full-screen sheet: header, scrolling body, sticky action footer */
+  .modal-back{padding:0;align-items:stretch;top:var(--chromebar,0px)}
+  .modal{width:100%;max-width:100%;border-radius:0;height:calc(100dvh - var(--chromebar,0px));max-height:none}
+  .modal-hd{padding:14px 16px 10px}
+  .modal-body{padding:0 16px 16px}
+  .c-cols{grid-template-columns:1fr;gap:22px}
+  .c-money{margin-top:16px;padding-top:14px}
+  .modal-ft{padding:12px 16px calc(12px + env(safe-area-inset-bottom))}
+  .d-card{padding:20px 18px}
+  .d-h1{font-size:26px}
+  .vrow-main{flex-wrap:wrap;gap:4px 14px}
+  .vrow-k{flex:0 0 100%}
+  .vrow-v{flex:1 1 auto}
+  .q-doc{padding:20px 18px}
+  .pkv{grid-template-columns:1fr;gap:2px}
+  .pkv dt{font-size:14px;color:var(--helper)}
+  .pkv dd{margin-bottom:10px}
+  .prow{flex-wrap:wrap}
+  .prow-money{text-align:left;width:100%;display:flex;gap:8px;align-items:baseline}
+  .prow-money .v{font-size:18px}
+  .q-actions,.q-cta-help{display:none}
+  .prow{border-top:1px solid var(--rule);margin-top:18px}
+  .del-form{padding-left:0}
   .sheet{padding:28px 24px;min-height:0}
   .sheet .pfoot{margin-top:32px}
   .mail-body{padding:20px}
-  /* full-screen sheet: header and footer are flex children, never position:fixed */
-  /* the full-screen sheet owns the viewport, so the prototype chip rail drops back behind it */
-  body.modal-open #view-pdp .chipdeck{position:static;z-index:auto;box-shadow:none}
-  /* the production label is long, so the pinned footer stacks rather than wrapping mid-phrase */
-  .modal-ft .row{flex-direction:column;align-items:flex-start;gap:2px}
-  .modal-back{padding:0;align-items:stretch;top:var(--chromebar,0px)}
-  .modal,.modal.lean{width:100%;max-width:100%;max-height:none;
-    height:calc(100dvh - var(--chromebar,0px));border:0;border-radius:0}
   .mobile-bar{display:block;position:fixed;left:0;right:0;bottom:0;z-index:120;background:#fff;
     border-top:1px solid var(--rule-strong);box-shadow:0 -4px 16px rgba(0,0,0,.10);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
   .mobile-bar .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
-  .mobile-bar .tot{font-size:13px;color:var(--body)}
+  .mobile-bar .tot{font-size:14px;color:var(--body)}
   .mobile-bar .tot b{display:block;font-size:20px;font-weight:700;color:var(--ink)}
-  .mobile-bar .btn-primary{width:auto;min-width:170px;font-size:17px;min-height:48px}
-  .has-mobile-bar{padding-bottom:120px}
-  .desk-rail{display:none}
-  table.items thead{display:none}
-  table.items,table.items tbody,table.items tr,table.items td{display:block;width:100%}
-  table.items tr{border-bottom:1px solid var(--rule);padding:10px 0}
-  table.items tr:last-child{border-bottom:0}
-  table.items td{border:0;padding:2px 0;text-align:left !important}
-  table.items td.r[data-l]:not([data-l=""])::before{content:attr(data-l) ": ";color:var(--body);font-weight:400}
-  table.items caption{display:block;width:100%}
-  table.items td.item{font-weight:700}
-  table.items tr.tot td{font-size:20px;padding-top:8px}
+  .mobile-bar .btn-primary{width:auto;min-width:168px;font-size:17px;min-height:48px}
+  .mobile-bar .row2{display:flex;gap:16px;margin-top:8px}
+  .mobile-bar .row2 .actlink{background:none;border:0;padding:2px;font-size:14px;font-weight:700;color:var(--navy)}
+  .has-mobile-bar{padding-bottom:132px}
 }
-@media (min-width:961px){ .mobile-only{display:none !important} }
+@media (min-width:961px){ .mobile-only{display:none !important} .c-foot{margin-top:18px} }
 
 /* ============================================================
-   V5 — REAL PRINT STYLESHEET.
-   Printing from anywhere renders the quote document, so the PDF cannot
-   drift from the page. Module triggers and forms are hidden; their
-   results are not, so the shipping row, the company line and the
-   revision stamp all print.
+   V5 — REAL PRINT STYLESHEET. Printing from anywhere renders the
+   quote document, so the PDF cannot drift from the page. The
+   product row prints expanded, because a document has no chevron.
    ============================================================ */
 @media print{
   @page{size:letter;margin:0.5in}
   body{background:#fff;color:#111}
-  .proto-bar,.proto-help,.state-chips,.ann,.ann-list,.modal-ann,.site-head,.q-banner,.q-arrival,
-  .desk-rail,.mobile-bar,.changes,.toast,.modal-back,.pdf-stage,.mail-stage,
-  .qmod-trigger,.qmod-form{display:none !important}
+  .proto-bar,.proto-help,.state-chips,.ann,.ann-list,.modal-ann,.site-head,.q-arrival,
+  .mobile-bar,.toast,.modal-back,.pdf-stage,.mail-stage,.q-actions,.q-cta-help,
+  .prow-chev,.del-form,.det-form,.q-changes,.spec .btn-mini,.no-print{display:none !important}
   .view{display:none !important}
   #view-quote{display:block !important}
-  .wrap{max-width:none;padding:0}
-  .q-grid{display:block;padding:0}
+  .wrap-narrow{max-width:none;padding:0}
+  .q-page{padding:0}
   .q-doc{border:0;border-radius:0;padding:0;box-shadow:none}
-  .q-doc.dim table.items,.q-doc.dim .q-kv dd{opacity:1}
-  .qmod{border:0;background:none;padding:0;margin-top:14px}
+  .prow{padding-top:0}
+  .prow-body{display:block !important}
   .print-only{display:block !important}
-  table.items{page-break-inside:avoid}
-  .terms li{page-break-inside:avoid}
-  .q-sec{page-break-inside:avoid}
+  .prow,.totals,.q-block,.q-terms li{page-break-inside:avoid}
 }
 .print-only{display:none}
 @keyframes fadeswap{from{opacity:0}to{opacity:1}}
@@ -577,7 +550,6 @@ table.items tr.softrow td{color:var(--body)}
 </style>
 </head>
 <body class="show-ann">
-
 <!-- ============================================================
      PROTOTYPE CHROME
      ============================================================ -->
@@ -585,27 +557,27 @@ table.items tr.softrow td{color:var(--body)}
   <b>Instant Quote flow — prototype</b>
   <button class="proto-tab on" data-v="pdp">1 &middot; PDP</button>
   <button class="proto-tab" data-v="modc">2 &middot; Quote modal (C)</button>
-  <button class="proto-tab" data-v="modd">3 &middot; Quote modal (D)</button>
-  <button class="proto-tab" data-v="quote">4 &middot; Quote page</button>
+  <button class="proto-tab" data-v="paged">3 &middot; Quote page (D)</button>
+  <button class="proto-tab" data-v="quote">4 &middot; Issued quote</button>
   <button class="proto-tab" data-v="pdf">5 &middot; PDF</button>
   <button class="proto-tab" data-v="email">6 &middot; Email</button>
   <span class="proto-sep"></span>
   <button class="proto-toggle on" id="annToggle">Annotations: on</button>
-  <span class="proto-note">promotionpros.com &middot; 2026-09-03 &middot; R3</span>
+  <span class="proto-note">promotionpros.com &middot; 2026-09-03 &middot; R5</span>
 </div>
 <div class="proto-help" id="protoHelp"></div>
 
 <!-- ============================================================
-     VIEW 1 — PDP (V1), and the host page for both quote modals.
-     Production-faithful buy box in the new Tailwind PDP system.
+     VIEW 1 — PDP. Unchanged buy box; the lead row is the only
+     new thing. It opens modal C, or navigates to page D.
      ============================================================ -->
 <section class="view on" id="view-pdp">
 <div class="wrap">
   <div class="chipdeck">
     <div class="state-chips">
       <span class="lbl">Quote entry:</span>
-      <button class="chip on" id="chipEntryC">Option C &middot; lean modal</button>
-      <button class="chip" id="chipEntryD">Option D &middot; editable modal</button>
+      <button class="chip on" id="chipEntryC">Modal C &middot; lean</button>
+      <button class="chip" id="chipEntryD">Page D &middot; editable</button>
       <span class="proto-sep" style="background:var(--rule-strong)"></span>
       <span class="lbl">Configurator:</span>
       <button class="chip on" id="chipCfgOk">Complete</button>
@@ -629,15 +601,14 @@ table.items tr.softrow td{color:var(--body)}
 
   <div class="ann-list" id="annPdp">
     <span class="hd">View 1 — PDP entry. The quote button is the only new thing in the buy box.</span>
-    <li><b>A1</b> — Lead row: "Get a free sample" and "Get an instant quote" as paired half-width navy outline buttons directly above Add to cart. One visual tier, so the orange primary keeps its dominance (B-PDP010, B-CHK030). Navy on white is 15.9:1.</li>
-    <li><b>A2</b> — Helper "Priced now, good for 30 days" sets the instant + locked expectation before the click, so nobody presses it expecting a rep callback.</li>
-    <li><b>A3</b> — The "Quote entry" chip picks which modal the button opens. C and D are both user-initiated overlays on this page; neither navigates.</li>
-    <li><b>A4</b> — Switch the configurator chip to "Color not chosen": both lead buttons disable and name the missing thing (B-CHK031), rather than failing after the click.</li>
-    <li><b>A5</b> — The buy box is otherwise untouched production: numbered steps, 44px swatches, interactive tier table, orange 52px rounded CTA (B-PDP038 keeps the buy section focused).</li>
+    <li><b>A1</b> — Lead row: "Get a free sample" and "Get an instant quote" as paired half-width navy outline buttons directly above Add to cart. One visual tier, so the orange primary keeps its dominance (B-PDP010, B-CHK030).</li>
+    <li><b>A2</b> — Helper "Priced now, good for 30 days" sets the instant + locked expectation before the click.</li>
+    <li><b>A3</b> — The "Quote entry" chip picks the surface. <b>Modal C</b> opens over this page; <b>Page D</b> navigates to a full page, because a surface with controls is a page, not a modal.</li>
+    <li><b>A4</b> — Switch the configurator chip to "Color not chosen": both lead buttons disable and name the missing thing (B-CHK031).</li>
+    <li><b>A5</b> — The buy box is otherwise untouched production: numbered steps, 44px swatches, interactive tier table, orange 52px CTA.</li>
   </div>
 
   <div class="pdp-grid">
-    <!-- gallery: neutral inline-SVG placeholder, no external asset dependency -->
     <div>
       <div class="pdp-gallery">
         <svg width="230" height="380" viewBox="0 0 230 380" role="img" aria-label="Del Mar Bamboo Stylus Pen, natural bamboo">
@@ -664,7 +635,6 @@ table.items tr.softrow td{color:var(--body)}
       </div>
     </div>
 
-    <!-- buy box -->
     <div>
       <p class="sku">SKU: PP-DELMAR-BMB</p>
       <h1 class="pdp-h1">Del Mar Bamboo Stylus Pen</h1>
@@ -672,8 +642,8 @@ table.items tr.softrow td{color:var(--body)}
       <p class="pdp-desc">Moso bamboo barrel with a capacitive stylus tip and a black medium-point refill. Your logo is pad printed directly on the barrel.</p>
 
       <div class="recap">
-        <span id="pdpRecap">Color: <b>Natural bamboo</b> &nbsp;&nbsp; Quantity: <b>250</b></span>
-        <button class="linkbtn">Edit Color &amp; Quantity</button>
+        <span id="pdpRecap"></span>
+        <button class="linkbtn sm">Edit Color &amp; Quantity</button>
       </div>
 
       <div class="pdp-sec">
@@ -693,8 +663,8 @@ table.items tr.softrow td{color:var(--body)}
 
       <div class="pdp-sec">
         <div class="step-h"><span class="num">3</span> Decoration Method</div>
-        <p style="font-size:14.5px">Decoration method: <b style="color:var(--ink)" id="pdpMethod">Pad Printed</b> &middot; <span id="pdpLoc">Barrel</span> &middot; <span id="pdpColors">2 Colors</span></p>
-        <p class="note" id="pdpDecNote">Imprint Method Setup: $60.00 per location. Each imprint color past the first adds $0.35 per piece.</p>
+        <p style="font-size:15px">Decoration method: <b style="color:var(--ink)" id="pdpMethod">Pad Printed</b> &middot; <span id="pdpLoc">Barrel</span> &middot; <span id="pdpColors">2 Colors</span></p>
+        <p class="note" id="pdpDecNote"></p>
         <div id="pdpPmsHost"></div>
       </div>
 
@@ -702,7 +672,7 @@ table.items tr.softrow td{color:var(--body)}
         <div>
           <div style="color:var(--ink);font-weight:700">Subtotal with Setup Fee:</div>
           <div class="sub" id="pdpSubMeta">250 pieces</div>
-          <button class="linkbtn" style="margin-top:4px">View Price Breakdown</button>
+          <button class="linkbtn sm" style="margin-top:4px">View Price Breakdown</button>
         </div>
         <div style="text-align:right">
           <div class="amt" id="pdpSubtotal">$692.50</div>
@@ -710,14 +680,13 @@ table.items tr.softrow td{color:var(--body)}
         </div>
       </div>
 
-      <!-- LEAD ROW — V1-01 / V1-02 / V1-03 -->
       <div class="leadrow">
         <div class="pair">
           <button class="btn-outline" id="btnSample">Get a free sample</button>
           <button class="btn-outline" id="btnQuote" aria-label="Get an instant quote for this configuration">Get an instant quote</button>
         </div>
         <p class="helper" id="leadHelper">Priced now, good for 30 days</p>
-        <span class="ann" style="top:-6px;right:-4px"><span class="dot" tabindex="0">A1</span><span class="txt">Lead row: two half-width navy outline buttons above the orange primary. Same tier as each other, one tier below Add to cart (B-CHK030).</span></span>
+        <span class="ann" style="top:-6px;right:-4px"><span class="dot" tabindex="0">A1</span><span class="txt">Two half-width navy outline buttons above the orange primary. Same tier as each other, one tier below Add to cart (B-CHK030).</span></span>
         <span class="ann" style="top:56px;right:-4px"><span class="dot" tabindex="0">A2</span><span class="txt">V1-03 "Priced now, good for 30 days" — sets the instant + locked expectation before the click.</span></span>
       </div>
 
@@ -733,207 +702,85 @@ table.items tr.softrow td{color:var(--body)}
 </div>
 
 <!-- ============================================================
-     VIEW 2 — QUOTE MODAL, OPTION C (lean, 480px).
-     User-initiated over the scrimmed PDP. Nothing here is editable:
-     five visible data elements, one collapsed disclosure, two fields.
-     The buyer changes the configuration where it was made, on the PDP.
+     VIEW 2 — MODAL C. Lean and wide: 760px, two columns, so the
+     whole request fits at 1280x800 with no vertical scroll.
+     Left column is what is being quoted; right column is who it
+     goes to. Nothing is editable — the controls are on the PDP.
      ============================================================ -->
 <div class="ann-list modal-ann" id="annC">
-  <span class="hd">View 2 — Option C, the lean modal.</span>
-  <li><b>C1</b> — One configuration line in words, not a table of rows. The buyer reads the spec as a sentence and checks it in one pass.</li>
-  <li><b>C2</b> — Zero editable controls. "Change" closes the modal and puts a focus ring on the PDP configurator, which is where the controls already are (SH-11, SH-12).</li>
-  <li><b>C3</b> — The figure carries production's own labels: "Subtotal with Setup Fee:" with "Price each:" beside it, and "View Price Breakdown" opening production's own line items. The number is never behind a hover.</li>
-  <li><b>C4</b> — Switch the Decoration chip to "Never set": an amber notice spells out the defaulted decoration before the total, because a silently defaulted decoration is the way a quote is most likely to be wrong.</li>
-  <li><b>C5</b> — Two required fields. Blur an empty name or a malformed email to see on-blur validation; the CTA names what is missing until both validate.</li>
-  <li><b>C6</b> — Company, phone and need-by are not here. They are two optional modules on the quote page, after the number exists.</li>
+  <span class="hd">View 2 — Modal C, the lean request.</span>
+  <li><b>C1</b> — 760px and two columns rather than 480px and one, so nothing scrolls at 1280&times;800. The buyer reads the configuration and fills the form without moving the page.</li>
+  <li><b>C2</b> — The configuration is one sentence, not a table of rows: color, quantity, decoration method, location, imprint colors.</li>
+  <li><b>C3</b> — Zero editable controls. "Change" closes the modal and rings the PDP configurator, which is where the controls already are.</li>
+  <li><b>C4</b> — Production's own labels on the figure: "Subtotal with Setup Fee:", "Price each:", "View Price Breakdown". The number is never behind a hover.</li>
+  <li><b>C5</b> — Switch the Decoration chip to "Never set": an amber notice names the defaulted decoration above the total.</li>
+  <li><b>C6</b> — Two required fields, validated on blur. The CTA names what is missing until both pass.</li>
 </div>
 
 <div class="modal-back" id="backC">
-  <div class="modal lean" role="dialog" aria-modal="true" aria-labelledby="cTitle">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="cTitle" id="cDialog" tabindex="-1">
     <div class="modal-hd">
-      <h2 id="cTitle" tabindex="-1">Your instant quote</h2>
+      <h2 id="cTitle">Your instant quote</h2>
       <button class="modal-x" id="cX" aria-label="Close">
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 5l12 12M17 5L5 17" stroke="currentColor" stroke-width="2"/></svg>
       </button>
     </div>
     <div class="modal-body">
       <div id="cMain">
-        <!-- thumbnail + the configuration as one sentence (C-02) -->
-        <div class="c-sum">
-          <div class="thumb xs">
-            <svg width="20" height="34" viewBox="0 0 230 380" aria-hidden="true"><rect x="96" y="52" width="38" height="252" rx="19" fill="#D8BC8E"/><path d="M96 304h38l-19 46z" fill="#B58F58"/><rect x="96" y="24" width="38" height="30" rx="8" fill="#5A5A5A"/></svg>
-          </div>
-          <p class="txt" id="cSummary"></p>
-        </div>
-        <div class="c-change">
-          <button class="linkbtn lg" id="cChange">Change</button>
-          <span class="note" style="margin:0">Changes are made on the product page</span>
-        </div>
-
-        <div id="cNotice"></div>
-
-        <div id="cPrice">
-          <div class="c-total">
-            <span class="k">Subtotal with Setup Fee:</span>
-            <span class="amt" id="cTotal">$692.50</span>
-            <span class="ea">Price each: <b id="cEach" style="color:var(--ink)">$2.18</b></span>
-          </div>
-          <p class="disclose">
-            <button class="linkbtn" id="cDisc" aria-expanded="false" aria-controls="cDiscBody">View Price Breakdown</button>
-          </p>
-          <div class="disclose-body" id="cDiscBody"></div>
-        </div>
-        <div id="cSpecialist"></div>
-
-        <div id="cForm" style="margin-top:18px"></div>
-
-        <button class="btn-primary sm" id="cSubmit">Get my quote</button>
-        <p class="reason" id="cReason">Add your name and email to generate the quote</p>
-        <p class="promise" id="cPromise">Priced now and locked for 30 days. The quote page and PDF go to your email.</p>
-        <p class="escape">Have a question first? <a href="#" onclick="return false">Talk to a specialist</a></p>
-      </div>
-
-      <!-- specialist confirmation replaces the panel in place (SP-06 / SP-07) -->
-      <div class="sp-confirm" id="cConfirm" style="display:none">
-        <h2>Your request is in</h2>
-        <p>Reference Q-48213. A specialist sends the quote to dana@acme.com by Fri, Sep 4, 2026.</p>
-        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--green-rule)"><div id="cEcho"></div></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================================
-     VIEW 3 — QUOTE MODAL, OPTION D (editable core config, 640px).
-     Quantity, decoration method and imprint location are the production
-     controls captured 2026-09-03. Product color and imprint colors are
-     read-only and change on the PDP. Total and CTA live in a pinned footer.
-     ============================================================ -->
-<div class="ann-list modal-ann" id="annD">
-  <span class="hd">View 3 — Option D, the editable modal.</span>
-  <li><b>D1</b> — Quantity, decoration method and imprint location are editable, using production's own controls: the price-tier table, the stacked method options, and the native location select. Everything re-prices live.</li>
-  <li><b>D2</b> — Color and imprint colors stay read-only, because both are PDP swatch decisions. The helper says where they change.</li>
-  <li><b>D3</b> — Change the location to Cap, then pick <b>Laser Engraved</b>. Production discards the chosen location on every method change, and laser prints in one color, so both the location and the imprint-color count change. Both are announced in an info band above the footer, never silently.</li>
-  <li><b>D4</b> — Type a quantity under 100, or over 10,000: the first is a validation error, the second cross-fades the modal into the specialist state mid-edit while keeping every typed value.</li>
-  <li><b>D5</b> — The pinned footer is production's own collapsed block: "Subtotal with Setup Fee:", "Price each:", "View Price Breakdown". The capture shows that figure carries base, setup and run, so there is one money number in the modal, not two.</li>
-  <li><b>D6</b> — Method and location controls are built from the 2026-09-03 capture. They are reconstructions: production's method cards are hand-authored BEM components and its location control is a react-select combobox, neither of which a static prototype imports. That is a build constraint for Boris, not a design choice.</li>
-  <li><b>D7</b> — Pantone/PMS matching is set on the product page, never here. When it is set, D reports it read-only and it flows to the quote, the PDF and the email. The capture could not confirm it changes the price at configurator time, so it is priced at proofing.</li>
-</div>
-
-<div class="modal-back" id="backD">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="dTitle">
-    <div class="modal-hd">
-      <h2 id="dTitle" tabindex="-1">Your instant quote</h2>
-      <button class="modal-x" id="dX" aria-label="Close">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M5 5l12 12M17 5L5 17" stroke="currentColor" stroke-width="2"/></svg>
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <div id="dMain">
-        <div class="c-sum" style="margin-bottom:14px">
-          <div class="thumb sm">
-            <svg width="26" height="46" viewBox="0 0 230 380" aria-hidden="true"><rect x="96" y="52" width="38" height="252" rx="19" fill="#D8BC8E"/><path d="M96 304h38l-19 46z" fill="#B58F58"/><rect x="96" y="24" width="38" height="30" rx="8" fill="#5A5A5A"/></svg>
-          </div>
+        <div class="c-cols">
+          <!-- LEFT — what is being quoted -->
           <div>
-            <div style="font-size:16px;font-weight:700;color:var(--ink);line-height:1.35">Del Mar Bamboo Stylus Pen</div>
-            <p class="note" style="margin-top:3px">SKU: PP-DELMAR-BMB</p>
-          </div>
-        </div>
-
-        <!-- COLORS — read-only. Production label case verbatim. -->
-        <div class="d-sec" style="margin-top:20px">
-          <h3 class="step-bar"><span class="n">1</span> Colors</h3>
-          <div id="dRo"></div>
-          <p class="note">Color and imprint colors are changed on the product page</p>
-        </div>
-
-        <!-- QUANTITY — production tier table + inline Quantity / Price each fields -->
-        <div class="d-sec">
-          <h3 class="step-bar"><span class="n">2</span> Quantity</h3>
-          <div class="tier-rail"><div class="tier-wrap"><table class="tier" id="dTier" aria-label="Price per unit by quantity. Choose a quantity by activating a column."></table></div></div>
-          <div class="inline-pair">
-            <div class="field" style="margin:0" id="dQtyField">
-              <div class="inline-field"><label class="k" for="dQty">Quantity:</label><input type="text" id="dQty" inputmode="numeric" value="250"></div>
-              <p class="errmsg" id="dQtyErr">Quantity starts at 100 pieces for this product</p>
-              <p class="note">Order as few as 100</p>
+            <div class="c-head">
+              <div class="thumb" id="cThumb"></div>
+              <div class="c-name">Del Mar Bamboo Stylus Pen</div>
             </div>
-            <div>
-              <div class="inline-field ro"><span class="k">Price each:</span><span class="v" id="dUnit">$2.18</span>
-                <span class="tipwrap" style="margin-left:auto"><button class="tipbtn" aria-label="How the price each is set">
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="4.8" r=".9" fill="currentColor"/></svg>
-                </button><span class="tipbox">The price each comes from the quantity break you selected above.</span></span>
-              </div>
+            <p class="c-config" id="cSummary"></p>
+            <div class="c-change">
+              <button class="linkbtn" id="cChange">Change</button>
+              <span class="note">Changes are made on the product page</span>
             </div>
+
+            <div id="cNotice" style="margin-top:16px"></div>
+
+            <div class="c-money money" id="cPrice">
+              <span class="k">Subtotal with Setup Fee:</span>
+              <span class="amt" id="cTotal">$692.50</span>
+              <span class="ea">Price each: <b id="cEach">$2.18</b></span>
+              <div><button class="linkbtn" id="cDisc" aria-expanded="false" aria-controls="cDiscBody">View Price Breakdown</button></div>
+              <div class="disclose-body" id="cDiscBody"></div>
+            </div>
+            <div id="cSpecialist"></div>
           </div>
-        </div>
 
-        <!-- DECORATION METHOD — production stacked option list + charges table -->
-        <div class="d-sec">
-          <h3 class="step-bar"><span class="n">3</span> Decoration Method</h3>
-          <div class="method-list" role="radiogroup" aria-label="Select imprint method" id="dMethods"></div>
-          <span class="badge" id="dBadge">2 Colors</span>
-          <div id="dIncluded"></div>
-          <table class="charges">
-            <caption class="sr">Decoration charges</caption>
-            <thead><tr><th scope="col">Decoration Charges</th><th scope="col" class="r">Setup</th><th scope="col" class="r">Run Charge</th></tr></thead>
-            <tbody id="dCharges"></tbody>
-          </table>
-          <p class="provisional">Reconstruction, pending an import: this control is built from the 2026-09-03 production capture, not from the live component.</p>
-        </div>
-
-        <!-- IMPRINT DETAILS — production dashed box, native location select -->
-        <div class="d-sec">
-          <h3 class="step-bar"><span class="n">4</span> Imprint Details</h3>
-          <div id="dPms"></div>
-          <div class="imprint-box">
-            <label class="lbl" for="dLoc">Imprint location</label>
-            <select id="dLoc"></select>
-            <p class="lbl" style="margin-top:14px">Imprint Colors</p>
-            <div class="imprint-cost">
-              <span id="dImprintColors">2 Colors</span>
-              <span class="c">Imprint #1 cost: <b id="dImprintCost" style="color:var(--ink)">$60.00</b></span>
+          <!-- RIGHT — who it goes to -->
+          <div class="c-right" id="cRight">
+            <div id="cForm"></div>
+            <div class="c-foot" id="cFoot">
+              <button class="btn-primary sm" id="cSubmit">Get my quote</button>
+              <p class="reason" id="cReason">Add your name and email to generate the quote</p>
+              <p class="promise" id="cPromise">Priced now and locked for 30 days. The quote page and PDF go to your email.</p>
             </div>
           </div>
-          <p class="provisional">Reconstruction, pending an import: this control is built from the 2026-09-03 production capture, not from the live component.</p>
         </div>
-
-        <div class="disclose-body" id="dDiscBody"></div>
-        <div id="dSpecialist" style="margin-top:16px"></div>
-        <div id="dForm" style="margin-top:18px"></div>
         <p class="escape">Have a question first? <a href="#" onclick="return false">Talk to a specialist</a></p>
       </div>
 
-      <div class="sp-confirm" id="dConfirm" style="display:none">
+      <div class="sp-confirm" id="cConfirm" hidden>
         <h2>Your request is in</h2>
         <p>Reference Q-48213. A specialist sends the quote to dana@acme.com by Fri, Sep 4, 2026.</p>
-        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--green-rule)"><div id="dEcho"></div></div>
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--green-rule)"><div id="cEcho"></div></div>
       </div>
     </div>
-
-    <!-- pinned footer: total, breakdown, CTA. Never only in scrolled content. -->
-    <div class="modal-ft" id="dFooter">
-      <div id="dNotices" aria-live="polite"></div>
-      <div class="row">
-        <span class="k" id="dFootK">Subtotal with Setup Fee:</span>
-        <span><span class="v" id="dFootV">$692.50</span><span class="ea" id="dFootEa">Price each: $2.18</span></span>
-      </div>
-      <p class="disclose" style="margin:0 0 12px">
-        <button class="linkbtn" id="dDisc" aria-expanded="false" aria-controls="dDiscBody">View Price Breakdown</button>
-      </p>
-      <button class="btn-primary sm" id="dSubmit">Get my quote</button>
-      <p class="reason" id="dReason">Add your name and email to generate the quote</p>
-      <p class="promise" id="dPromise">Priced now and locked for 30 days. The quote page and PDF go to your email.</p>
-    </div>
+    <div class="modal-ft" id="cFootSlot"></div>
   </div>
 </div>
 </section>
 
 <!-- ============================================================
      SHARED TEMPLATE — the two required contact fields, instantiated
-     into C and D with an instance suffix so they cannot drift apart.
-     Typed values are mirrored between instances, which is what
-     sessionStorage does in the spec.
+     into C and D with a suffix so they cannot drift apart. Typed
+     values mirror between instances, which is what sessionStorage
+     does in the spec.
      ============================================================ -->
 <template id="tplForm">
   <div class="field" id="fName__S__">
@@ -947,19 +794,95 @@ table.items tr.softrow td{color:var(--body)}
     <p class="errmsg" id="emailErr__S__">Enter the email address for the quote</p>
     <p class="note" id="emailNote__S__">The quote page and PDF go to this address</p>
   </div>
-  <p class="note" style="margin:-6px 0 14px">Your details are used for this quote and your order. No marketing lists.</p>
+  <p class="c-privacy">Your details are used for this quote and your order. No marketing lists.</p>
 </template>
+<!-- ============================================================
+     VIEW 3 — PAGE D. A full page, not a modal: a surface with
+     controls needs room and a URL. 720px measure, 16px body,
+     two type sizes in the card. Quantity, decoration method and
+     location are editable, each behind its own Change disclosure,
+     so the page is a list of values until the buyer asks for a
+     control. Color and imprint colors stay on the product page.
+     ============================================================ -->
+<section class="view" id="view-paged">
+<div class="site-head">
+  <div class="site-head-in">
+    <div class="logo">Promotion<span class="o">Pros</span><span class="tag">Put your brand on it.</span></div>
+    <div class="hd-title"></div>
+    <button class="linkbtn sm" onclick="go('pdp')">Back to the product</button>
+  </div>
+</div>
+
+<div class="wrap-narrow">
+  <div class="ann-list">
+    <span class="hd">View 3 — Page D, the editable request.</span>
+    <li><b>D1</b> — A page, not a modal. The product owner's rule: modal for the simple scenario, full page for the long one.</li>
+    <li><b>D2</b> — The card is a list of values, not a configurator. Quantity, decoration method and location each carry a <b>Change</b> that reveals one compact control under that row and a <b>Done</b> that collapses it. Nothing heavy is on screen until it is asked for.</li>
+    <li><b>D3</b> — No PDP tier table, no method cards, no step badges. The quantity control is a number field with the tier band written out; method and location are compact radio lists.</li>
+    <li><b>D4</b> — Color and imprint colors are read-only, with "Change on product page" beside them, because both are swatch decisions on the PDP.</li>
+    <li><b>D5</b> — Change the location to Cap, then pick <b>Laser Engraved</b>: production discards the chosen location on every method change and laser prints in one color, so both changes are announced in one line rather than discovered on the quote.</li>
+    <li><b>D6</b> — Type a quantity under 100 for the validation error, or over 10,000 to reach the specialist state mid-edit with every typed value kept.</li>
+  </div>
+</div>
+
+<div class="wrap-narrow d-page has-mobile-bar">
+  <div id="dMain">
+    <h1 class="d-h1">Get an instant quote</h1>
+    <p class="d-lede">Check the details, change what you need, and we'll price it now.</p>
+
+    <div class="d-card">
+      <div class="d-card-hd">
+        <a class="thumb" href="#" onclick="go('pdp');return false" aria-label="Del Mar Bamboo Stylus Pen product page" id="dThumb"></a>
+        <div>
+          <a class="pname" href="#" onclick="go('pdp');return false">Del Mar Bamboo Stylus Pen</a>
+          <p class="psku">SKU: PP-DELMAR-BMB</p>
+        </div>
+      </div>
+      <div class="vrows" id="dRows"></div>
+      <div id="dNotice" class="d-notice"></div>
+    </div>
+
+    <div class="d-money money" id="dPrice">
+      <span class="k">Subtotal with Setup Fee:</span>
+      <span class="amt" id="dTotal">$692.50</span>
+      <span class="ea">Price each: <b id="dEach">$2.18</b></span>
+      <div><button class="linkbtn" id="dDisc" aria-expanded="false" aria-controls="dDiscBody">View Price Breakdown</button></div>
+      <div class="disclose-body" id="dDiscBody"></div>
+    </div>
+    <div id="dSpecialist"></div>
+
+    <div class="d-form" style="max-width:420px">
+      <div id="dForm"></div>
+      <button class="btn-primary sm" id="dSubmit">Get my quote</button>
+      <p class="reason" id="dReason">Add your name and email to generate the quote</p>
+      <p class="promise" id="dPromise">Priced now and locked for 30 days. The quote page and PDF go to your email.</p>
+    </div>
+    <p class="escape">Have a question first? <a href="#" onclick="return false">Talk to a specialist</a></p>
+  </div>
+
+  <div class="sp-confirm" id="dConfirm" hidden style="margin-top:28px">
+    <h2>Your request is in</h2>
+    <p>Reference Q-48213. A specialist sends the quote to dana@acme.com by Fri, Sep 4, 2026.</p>
+    <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--green-rule)"><div id="dEcho"></div></div>
+  </div>
+</div>
+
+<div class="mobile-bar mobile-only" id="dMobBar">
+  <div class="top">
+    <div class="tot"><span id="dMobK">Subtotal with Setup Fee</span> <b id="dMobTotal">$692.50</b></div>
+    <button class="btn-primary" id="dMobCta">Get my quote</button>
+  </div>
+</div>
+</section>
 
 <!-- ============================================================
-     VIEW 4 — QUOTE PAGE (V3).
-     A public, tokenised, no-login document, regularly opened by someone who
-     is not the requester. Two optional post-capture modules sit between the
-     line items and the terms: delivery, and the contact details the request
-     surface deliberately did not ask for. Both keep the quote number and add
-     a dated revision stamp, and both are open to any link holder.
+     VIEW 4 — THE ISSUED QUOTE. Simplified: no line-item table,
+     product details collapsed, delivery behind a checkbox, and
+     the shipping row in the totals links to that checkbox rather
+     than contradicting it.
      ============================================================ -->
 <section class="view" id="view-quote">
-<div class="wrap">
+<div class="wrap-narrow">
   <div class="state-chips">
     <span class="lbl">Quote state:</span>
     <button class="chip on" data-qs="valid">Valid</button>
@@ -977,9 +900,13 @@ table.items tr.softrow td{color:var(--body)}
     <button class="chip" id="chipRepGeneric">Sales line</button>
   </div>
   <div class="state-chips" style="padding-top:6px">
+    <span class="lbl">Product details:</span>
+    <button class="chip on" id="chipProdCol">Collapsed</button>
+    <button class="chip" id="chipProdExp">Expanded</button>
+    <span class="proto-sep" style="background:var(--rule-strong)"></span>
     <span class="lbl">Calculate delivery:</span>
-    <button class="chip on" data-dl="none">Not calculated</button>
-    <button class="chip" data-dl="loading">Calculating</button>
+    <button class="chip on" data-dl="none">Off</button>
+    <button class="chip" data-dl="address">Address</button>
     <button class="chip" data-dl="options">Options</button>
     <button class="chip" data-dl="chosen">Chosen</button>
     <button class="chip" data-dl="empty">Rates empty</button>
@@ -990,14 +917,14 @@ table.items tr.softrow td{color:var(--body)}
   </div>
 
   <div class="ann-list">
-    <span class="hd">View 4 &mdash; the quote document. Four states, an unresolvable link, and the two optional modules.</span>
-    <li><b>A1</b> &mdash; The reference number is the h1, with a real issued date and a real expiry date. Never "subject to change" &mdash; procurement cannot cite a quote it cannot name.</li>
-    <li><b>A2</b> &mdash; "Prepared for" names the requester, because the person reading this is often the approver the link was forwarded to. It gains a company line once "Add details" is used.</li>
-    <li><b>A3</b> &mdash; <b>Calculate delivery</b> asks the shipping question after the number exists rather than before it. Choosing an option replaces the "calculated at checkout" row, recomputes the total, switches the trust line, stamps the document, and offers a re-send rather than sending a second email unasked.</li>
-    <li><b>A4</b> &mdash; <b>Add details</b> collects company, phone and need-by after capture. Phone carries its reason. A need-by date earlier than the arrival date is answered, not accepted silently.</li>
-    <li><b>A5</b> &mdash; Both modules keep the quote number. Delivery and contact details are additive and leave the quoted goods price untouched; a configuration change is what makes a new number. A dated revision stamp under the reference records what was added.</li>
-    <li><b>A6</b> &mdash; The expired state never silently re-prices: the table dims, a "prices as of" caption appears, and the CTA becomes "Get an updated quote" under a new number.</li>
-    <li><b>A7</b> &mdash; Print calls the real print stylesheet: the module triggers and forms are hidden, their results are not. One template, so the page and the PDF cannot drift.</li>
+    <span class="hd">View 4 &mdash; the quote document, simplified.</span>
+    <li><b>A1</b> &mdash; The reference number is the h1 with a status chip beside it, then who it is for and the two real dates. Never "subject to change".</li>
+    <li><b>A2</b> &mdash; The action bar sits directly under the header, before the reading matter, and becomes a sticky bar on mobile.</li>
+    <li><b>A3</b> &mdash; <b>Product details collapse.</b> The row carries the thumbnail, the product link, the configuration in one line and the figure; the chevron opens the full configuration and the production breakdown. The line-item table is gone — it repeated the breakdown and told the buyer nothing more.</li>
+    <li><b>A4</b> &mdash; <b>The shipping conflict is resolved in one row.</b> "Shipping: Calculated at checkout — Calculate now" links to the delivery checkbox below, so the two statements are one statement with a path between them.</li>
+    <li><b>A5</b> &mdash; <b>Calculate delivery is a checkbox.</b> Ticking it reveals the address form; choosing a rate replaces the shipping row, renames the final figure and stamps the document. Unticking removes the line again.</li>
+    <li><b>A6</b> &mdash; "Add company, phone or need-by date" is a link, not a panel, so the optional ask costs one line until it is wanted.</li>
+    <li><b>A7</b> &mdash; Print runs the real print stylesheet: the product row prints expanded, module controls do not print, module results do.</li>
   </div>
 </div>
 
@@ -1005,203 +932,200 @@ table.items tr.softrow td{color:var(--body)}
   <div class="site-head-in">
     <div class="logo">Promotion<span class="o">Pros</span><span class="tag">Put your brand on it.</span></div>
     <div class="hd-title" id="qHeadTitle">Quote Q-48213</div>
-    <button class="linkbtn" onclick="go('pdp')">Back to promotionpros.com</button>
+    <button class="linkbtn sm" onclick="go('pdp')">Back to promotionpros.com</button>
   </div>
 </div>
 
-<div class="wrap has-mobile-bar">
-  <div class="q-grid">
-    <div>
-      <!-- V3-27 — a bad token is answered, never returned as a bare 404 -->
-      <div class="q-invalid" id="qInvalid" role="status" style="display:none">
-        <h1>This quote link doesn't resolve</h1>
-        <p>Check the link, or call 800-555-0100 with the quote number.</p>
-        <button class="btn-outline" style="max-width:260px;margin-top:20px" onclick="go('pdp')">Back to promotionpros.com</button>
+<div class="wrap-narrow q-page has-mobile-bar">
+  <div class="q-invalid" id="qInvalid" role="status" hidden>
+    <h1>This quote link doesn't resolve</h1>
+    <p>Check the link, or call 800-555-0100 with the quote number.</p>
+    <button class="btn-outline" onclick="go('pdp')">Back to promotionpros.com</button>
+  </div>
+
+  <div id="qLive">
+    <div class="q-arrival" id="qArrival" role="status">Your quote is ready. We emailed a copy with the PDF to dana@acme.com.</div>
+
+    <div class="q-doc" id="qDoc">
+      <!-- HEADER -->
+      <div class="q-hd">
+        <h1>Quote Q-48213</h1>
+        <span class="q-status" id="qStatus">Valid</span>
       </div>
-      <div class="q-arrival" id="qArrival" role="status">Your quote is ready. We emailed a copy with the PDF to dana@acme.com.</div>
-      <div class="q-banner" id="qBanner" role="status">This quote is good through Oct 3, 2026. The price is honored at checkout until then.</div>
+      <p class="q-sub" id="qSub"></p>
+      <p class="revstamp" id="qRevStamp" hidden></p>
 
-      <div class="q-doc" id="qDoc">
-        <div class="q-ref">
-          <h1>Quote Q-48213</h1>
-          <p class="q-meta">Issued Sep 3, 2026 <span class="dot">&middot;</span> Valid through Oct 3, 2026</p>
-          <p class="revstamp" id="qRevStamp" style="display:none"></p>
-        </div>
-
-        <div class="q-sec">
-          <h2>Prepared for</h2>
-          <div class="q-kv" id="qPrepared"></div>
-        </div>
-
-        <div class="q-sec">
-          <h2 class="big">Del Mar Bamboo Stylus Pen</h2>
-          <div class="q-kv" id="qConfig"></div>
-          <p class="q-note" id="qDefaultNote" style="display:none">This quote prices the default decoration: pad printing, Barrel, 1 Color.</p>
-        </div>
-
-        <div class="q-sec">
-          <table class="items">
-            <caption>Quote Q-48213 &mdash; line items</caption>
-            <thead><tr>
-              <th scope="col">Item</th><th scope="col" class="r">Qty</th>
-              <th scope="col" class="r">Unit price</th><th scope="col" class="r">Amount</th>
-            </tr></thead>
-            <tbody id="qItems"></tbody>
-          </table>
-          <p class="asof" id="qAsOf" style="display:none">Prices as of Sep 3, 2026.</p>
-          <p class="q-note" id="qTrust">This is the complete price. Only shipping and sales tax are added at checkout.</p>
-          <p class="q-note" id="qProduction">Includes 5 business days production after you approve your proof.</p>
-        </div>
-
-        <!-- MODULE 1 — Calculate delivery (QD-01 … QD-05, DEL-03 … DEL-17) -->
-        <div class="qmod" id="qmDel">
-          <div class="qmod-trigger" id="qmDelTrigger">
-            <h3 class="sr">Calculate delivery</h3>
-            <button class="btn-outline" id="qmDelBtn" style="margin-top:0" aria-expanded="false" aria-controls="qmDelForm">Calculate delivery</button>
-            <p class="qmod-help" style="margin-top:8px">Adds a shipping cost and an arrival date to this quote. The PDF updates with it.</p>
-          </div>
-
-          <div class="qmod-form" id="qmDelForm" style="display:none">
-            <div id="qD2">
-              <h3 style="font-size:15px;font-weight:700;color:var(--ink);margin-bottom:10px">Ship to</h3>
-              <div class="field addr-auto">
-                <input type="text" id="qAuto" placeholder="Start typing your address to autofill the form&hellip;" autocomplete="off" aria-label="Address search">
-                <div class="addr-sugg" id="qSugg">
-                  <button type="button">1 N State St, Chicago, IL 60602</button>
-                  <button type="button">233 S Wacker Dr, Chicago, IL 60606</button>
-                  <button type="button">2550 N Clark St, Chicago, IL 60614</button>
-                </div>
-              </div>
-              <p style="margin-top:-6px"><button class="linkbtn" id="qManual">Enter address manually</button></p>
-
-              <div id="qGrid" style="display:none;margin-top:16px">
-                <div class="field"><label class="lbl" for="qStreet">Street address</label><input type="text" id="qStreet" autocomplete="address-line1"></div>
-                <p style="margin-top:-8px;margin-bottom:14px"><button class="linkbtn" id="qApt">Apartment, suite, unit (optional)</button></p>
-                <div class="field" id="qFApt" style="display:none"><label class="lbl" for="qApt2">Apartment, suite, unit</label><input type="text" id="qApt2" autocomplete="address-line2"></div>
-                <div class="grid2">
-                  <div class="field"><label class="lbl" for="qCity">City</label><input type="text" id="qCity" autocomplete="address-level2"></div>
-                  <div class="field"><label class="lbl" for="qState">State</label><input type="text" id="qState" autocomplete="address-level1"></div>
-                </div>
-                <div class="field" id="qFZip" style="max-width:220px">
-                  <label class="lbl" for="qZip">ZIP code</label><input type="text" id="qZip" inputmode="numeric" maxlength="5" autocomplete="postal-code">
-                  <p class="errmsg">ZIP code is 5 digits</p>
-                </div>
-                <button class="btn-outline" id="qShowOpts" disabled style="max-width:280px;margin-top:0">Show delivery options</button>
-                <p class="note" id="qShowOptsReason">Add the full address to check rates</p>
-              </div>
-              <p class="sr" aria-live="polite" id="qRateLive"></p>
-            </div>
-
-            <div id="qD3" style="display:none">
-              <div class="addr-summary">
-                <span id="qAddrEcho">Dana Whitfield, 2550 N Clark St, Chicago, IL 60614</span>
-                <button class="linkbtn" id="qChangeAddr">Change address</button>
-              </div>
-              <div id="qRates"></div>
-            </div>
-          </div>
-
-          <div id="qmDelResult" style="display:none">
-            <div class="band band-green" id="qmDelConfirm"></div>
-            <div class="qmod-trigger">
-              <button class="btn-ghost" id="qmDelResend" style="margin-top:12px">Email me the updated PDF</button>
-              <p style="margin-top:10px"><button class="linkbtn" id="qmDelEdit">Change delivery</button></p>
-            </div>
-          </div>
-        </div>
-
-        <!-- MODULE 2 — Add details (QD-10 … QD-14) -->
-        <div class="qmod" id="qmDet">
-          <div class="qmod-trigger" id="qmDetTrigger">
-            <h3 class="sr">Add details</h3>
-            <button class="btn-outline" id="qmDetBtn" style="margin-top:0" aria-expanded="false" aria-controls="qmDetForm">Add details</button>
-            <p class="qmod-help" style="margin-top:8px">Company and phone appear on the quote. A specialist uses them only if there's a question about it.</p>
-          </div>
-
-          <div class="qmod-form" id="qmDetForm" style="display:none">
-            <div class="field">
-              <label class="lbl" for="qCompany">Company <span class="opt">(optional)</span></label>
-              <input type="text" id="qCompany" autocomplete="organization" placeholder="Acme Logistics">
-            </div>
-            <div class="field" id="qFPhone">
-              <label class="lbl" for="qPhone">Phone <span class="opt">(optional)</span></label>
-              <input type="tel" id="qPhone" autocomplete="tel" placeholder="312-555-0148" aria-describedby="qPhoneNote">
-              <p class="errmsg">Phone numbers are 10 digits, like 312-555-0148</p>
-              <p class="note" id="qPhoneNote">Only used if a specialist needs to reach you about this quote</p>
-            </div>
-            <div class="field" id="qFDate">
-              <label class="lbl" for="qNeedby">Need-by date <span class="opt">(optional)</span></label>
-              <input type="date" id="qNeedby" aria-describedby="qDateNote">
-              <p class="errmsg">Choose a date from today onward</p>
-              <p class="note" id="qDateNote">Tells us whether your date is workable before you order</p>
-            </div>
-            <button class="btn-outline" id="qmDetSave" style="max-width:260px;margin-top:0">Save to this quote</button>
-          </div>
-
-          <div id="qmDetResult" style="display:none">
-            <div class="band band-green">Details saved. The PDF has been updated.</div>
-            <div class="band band-amber" id="qmDetConflict" style="margin-top:10px;display:none"></div>
-          </div>
-        </div>
-
-        <div class="q-sec">
-          <h2>Terms</h2>
-          <ul class="terms" id="qTerms"></ul>
-          <p class="company">PromotionPros <span class="dot">&middot;</span> 131 N Main St <span class="dot">&middot;</span> West Bend, WI 53095 <span class="dot">&middot;</span> 262-429-1300 <span class="dot">&middot;</span> info@promotionpros.com</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- ACTION RAIL -->
-    <div class="rail desk-rail">
-      <div class="rail-card">
-        <div class="rail-total"><span class="k">Total Price</span><span class="v" id="qRailTotalV">$692.50</span></div>
+      <!-- ACTION BAR -->
+      <div class="q-actions no-print">
         <button class="btn-primary" id="qCta">Order this quote</button>
-        <p class="reason" id="qCtaHelp">Restores this exact configuration at the quoted price</p>
-        <p class="reason" id="qCountdown" style="display:none;font-weight:700;color:var(--amber-ink)"></p>
-        <div class="rail-actions">
-          <button class="btn-ghost" id="qPdf">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 2v9m0 0l-3.2-3.2M9 11l3.2-3.2M3 13.5v1A1.5 1.5 0 004.5 16h9a1.5 1.5 0 001.5-1.5v-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            Download PDF</button>
-          <button class="btn-ghost" id="qCopy">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M7.5 10.5a3 3 0 004.4.3l2-2a3 3 0 00-4.2-4.3l-.6.6M10.5 7.5a3 3 0 00-4.4-.3l-2 2a3 3 0 004.2 4.3l.6-.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-            Copy link</button>
-          <button class="btn-ghost" id="qPrint">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M5 7V2.5h8V7M5 13H3.5V7.5h11V13H13M5 11h8v4.5H5V11z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-            Print</button>
+        <button class="actlink" id="qPdf">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 2v9m0 0l-3.2-3.2M9 11l3.2-3.2M3 13.5v1A1.5 1.5 0 004.5 16h9a1.5 1.5 0 001.5-1.5v-1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Download PDF</button>
+        <button class="actlink" id="qCopy">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M7.5 10.5a3 3 0 004.4.3l2-2a3 3 0 00-4.2-4.3l-.6.6M10.5 7.5a3 3 0 00-4.4-.3l-2 2a3 3 0 004.2 4.3l.6-.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Share link</button>
+        <button class="actlink" id="qPrint">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M5 7V2.5h8V7M5 13H3.5V7.5h11V13H13M5 11h8v4.5H5V11z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          Print</button>
+      </div>
+      <p class="q-cta-help" id="qCtaHelp">Restores this exact configuration at the quoted price</p>
+
+      <!-- PRODUCT ROW, collapsed by default -->
+      <button class="prow" id="qProwBtn" aria-expanded="false" aria-controls="qProwBody">
+        <span class="thumb sm" id="qThumb"></span>
+        <span class="prow-mid">
+          <span class="prow-name" id="qProwName">Del Mar Bamboo Stylus Pen</span>
+          <span class="prow-cfg" id="qProwCfg"></span>
+        </span>
+        <span class="prow-money">
+          <span class="k">Subtotal with Setup Fee:</span>
+          <span class="v" id="qProwSub">$692.50</span>
+        </span>
+        <svg class="prow-chev" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 8l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="prow-body" id="qProwBody" hidden>
+        <dl class="pkv" id="qConfig"></dl>
+        <p class="tnote" id="qDefaultNote" hidden style="margin-top:-8px;margin-bottom:16px">This quote prices the default decoration: pad printing, Barrel, 1 Color.</p>
+        <div id="qBreakdown"></div>
+        <p class="plink no-print"><a href="#" onclick="go('pdp');return false">View this product on promotionpros.com</a></p>
+      </div>
+
+      <!-- TOTALS -->
+      <div class="totals" id="qTotals"></div>
+      <p class="tnote" id="qTrust"></p>
+
+      <!-- DELIVERY -->
+      <div class="q-block" id="qDelBlock">
+        <label class="cbx no-print" for="qDelOn">
+          <input type="checkbox" id="qDelOn" aria-controls="qDelForm" aria-expanded="false">
+          <span><b style="font-weight:700">Calculate delivery</b><br>
+            <span class="note" style="margin:0">Adds a shipping cost and an arrival date to this quote. The PDF updates with it.</span></span>
+        </label>
+
+        <div class="del-form" id="qDelForm" hidden>
+          <div id="qD2">
+            <div class="field addr-auto">
+              <label class="lbl" for="qAuto">Ship to</label>
+              <input type="text" id="qAuto" placeholder="Start typing your address&hellip;" autocomplete="off">
+              <div class="addr-sugg" id="qSugg">
+                <button type="button">1 N State St, Chicago, IL 60602</button>
+                <button type="button">233 S Wacker Dr, Chicago, IL 60606</button>
+                <button type="button">2550 N Clark St, Chicago, IL 60614</button>
+              </div>
+            </div>
+            <p style="margin-top:-8px"><button class="linkbtn sm" id="qManual">Enter address manually</button></p>
+
+            <div id="qGrid" hidden style="margin-top:16px">
+              <div class="field"><label class="lbl" for="qStreet">Street address</label><input type="text" id="qStreet" autocomplete="address-line1"></div>
+              <p style="margin-top:-8px;margin-bottom:14px"><button class="linkbtn sm" id="qApt">Apartment, suite, unit (optional)</button></p>
+              <div class="field" id="qFApt" hidden><label class="lbl" for="qApt2">Apartment, suite, unit</label><input type="text" id="qApt2" autocomplete="address-line2"></div>
+              <div class="grid2">
+                <div class="field"><label class="lbl" for="qCity">City</label><input type="text" id="qCity" autocomplete="address-level2"></div>
+                <div class="field"><label class="lbl" for="qState">State</label><input type="text" id="qState" autocomplete="address-level1"></div>
+              </div>
+              <div class="field" id="qFZip" style="max-width:220px">
+                <label class="lbl" for="qZip">ZIP code</label><input type="text" id="qZip" inputmode="numeric" maxlength="5" autocomplete="postal-code">
+                <p class="errmsg">ZIP code is 5 digits</p>
+              </div>
+              <button class="btn-mini" id="qShowOpts" disabled>Show delivery options</button>
+              <p class="note" id="qShowOptsReason">Add the full address to check rates</p>
+            </div>
+            <p class="sr" aria-live="polite" id="qRateLive"></p>
+          </div>
+
+          <div id="qD3" hidden>
+            <div class="addr-summary">
+              <span id="qAddrEcho">Dana Whitfield, 2550 N Clark St, Chicago, IL 60614</span>
+              <button class="linkbtn sm" id="qChangeAddr">Change address</button>
+            </div>
+            <div id="qRates"></div>
+          </div>
         </div>
 
-        <div class="spec-card">
-          <h3 id="qSpecHd">Your specialist</h3>
-          <div class="who" id="qSpecWho">Terry Alvarez</div>
-          <p id="qSpecBody">312-555-0148 <span class="dot">&middot;</span> terry@promotionpros.com</p>
-          <button class="btn-ghost">Message us about this quote</button>
-          <p class="note" style="margin-top:8px">Opens a message prefilled with "I have a question about quote Q-48213."</p>
+        <div id="qDelResult" hidden>
+          <div class="band band-green" id="qDelConfirm" style="margin-top:14px"></div>
+          <p style="margin-top:12px" class="no-print"><button class="linkbtn sm" id="qDelResend">Email me the updated PDF</button></p>
+        </div>
+      </div>
+
+      <!-- ADD DETAILS -->
+      <div class="q-block" id="qDetBlock">
+        <p class="no-print"><button class="linkbtn" id="qDetBtn" aria-expanded="false" aria-controls="qDetForm">Add company, phone or need-by date</button></p>
+        <p class="note no-print" id="qDetHelp">Company and phone appear on the quote. A specialist uses them only if there's a question about it.</p>
+
+        <div class="det-form" id="qDetForm" hidden style="max-width:420px">
+          <div class="field">
+            <label class="lbl" for="qCompany">Company <span class="opt">(optional)</span></label>
+            <input type="text" id="qCompany" autocomplete="organization" placeholder="Acme Logistics">
+          </div>
+          <div class="field" id="qFPhone">
+            <label class="lbl" for="qPhone">Phone <span class="opt">(optional)</span></label>
+            <input type="tel" id="qPhone" autocomplete="tel" placeholder="312-555-0148" aria-describedby="qPhoneNote">
+            <p class="errmsg">Phone numbers are 10 digits, like 312-555-0148</p>
+            <p class="note" id="qPhoneNote">Only used if a specialist needs to reach you about this quote</p>
+          </div>
+          <div class="field" id="qFDate">
+            <label class="lbl" for="qNeedby">Need-by date <span class="opt">(optional)</span></label>
+            <input type="date" id="qNeedby" aria-describedby="qDateNote">
+            <p class="errmsg">Choose a date from today onward</p>
+            <p class="note" id="qDateNote">Tells us whether your date is workable before you order</p>
+          </div>
+          <button class="btn-mini" id="qDetSave">Save to this quote</button>
         </div>
 
-        <div class="changes" id="qChanges">
-          <button class="linkbtn lg" onclick="go('pdp')">Need changes? Edit this configuration</button>
-          <p>Opens the product page with these settings. A change produces a new quote number.</p>
+        <div id="qDetResult" hidden>
+          <div class="band band-green">Details saved. The PDF has been updated.</div>
+          <div class="band band-amber" id="qDetConflict" style="margin-top:10px" hidden></div>
         </div>
+      </div>
+
+      <!-- VALIDITY + CHANGES -->
+      <div class="q-block">
+        <p class="tnote" id="qValidity"></p>
+        <p class="q-changes no-print" style="margin-top:10px">
+          <button class="linkbtn sm" onclick="go('pdp')">Need changes? Edit this configuration</button>
+          <span class="note" style="display:block;margin-top:4px">Opens the product page with these settings. A change produces a new quote number.</span>
+        </p>
+      </div>
+
+      <!-- SPECIALIST -->
+      <div class="q-block">
+        <h2 id="qSpecHd">Your specialist</h2>
+        <div class="spec">
+          <div>
+            <div class="who" id="qSpecWho">Terry Alvarez</div>
+            <p id="qSpecBody">312-555-0148 &middot; terry@promotionpros.com</p>
+          </div>
+          <button class="btn-mini no-print">Message us about this quote</button>
+        </div>
+      </div>
+
+      <!-- TERMS -->
+      <div class="q-block">
+        <h2>Terms</h2>
+        <ul class="q-terms" id="qTerms"></ul>
+        <p class="company">PromotionPros &middot; 131 N Main St &middot; West Bend, WI 53095 &middot; 262-429-1300 &middot; info@promotionpros.com</p>
       </div>
     </div>
   </div>
 </div>
 
-<div class="mobile-bar mobile-only">
+<div class="mobile-bar mobile-only" id="qMobBar">
   <div class="top">
-    <div class="tot">Total Price <b id="qMobTotal">$692.50</b></div>
+    <div class="tot"><span id="qMobK">Total Price</span> <b id="qMobTotal">$692.50</b></div>
     <button class="btn-primary" id="qMobCta">Order this quote</button>
+  </div>
+  <div class="row2">
+    <button class="actlink" id="qMobPdf">Download PDF</button>
+    <button class="actlink" id="qMobShare">Share link</button>
+    <button class="actlink" id="qMobPrint">Print</button>
   </div>
 </div>
 </section>
-
 <!-- ============================================================
-     VIEW 5 — PRINT / PDF.
-     A Letter-size preview of what the print stylesheet produces from view 4.
-     The attachment is a server-side headless print of the same DOM, so the
-     PDF cannot drift from the page. It regenerates on every module save,
-     and dates itself, because a detached file outlives the state it records.
+     VIEW 5 — PDF. The same simplified structure and the same
+     vocabulary, with the breakdown expanded: a document has no
+     chevron, so nothing on it is collapsed.
      ============================================================ -->
 <section class="view" id="view-pdf">
 <div class="wrap">
@@ -1211,32 +1135,30 @@ table.items tr.softrow td{color:var(--body)}
     <button class="chip" id="chipPdfExpired">Expired &middot; watermark</button>
     <span class="proto-sep" style="background:var(--rule-strong)"></span>
     <button class="chip" id="chipDoPrint">Print this now</button>
-    <span class="proto-note" style="margin-left:12px;color:var(--helper)">The sheet mirrors the quote page's module states &mdash; set them on view 4.</span>
+    <span class="proto-note" style="margin-left:12px;color:var(--helper)">The sheet mirrors the quote page's delivery and details states &mdash; set them on view 4.</span>
   </div>
   <div class="ann-list">
-    <span class="hd">View 5 &mdash; the PDF. Same content, no interactive affordances.</span>
-    <li><b>A1</b> &mdash; Black on white, no background fills, 1px rules. Nothing here depends on color to be read, because this document gets photocopied and faxed into approval chains.</li>
-    <li><b>A2</b> &mdash; The footer carries the short link beside a QR to the same URL, and now states its own generation date: a detached PDF must date itself, because the link above it is always more current.</li>
-    <li><b>A3</b> &mdash; Module results print, module triggers do not. Add delivery or details on view 4 and the shipping row, the company line and the revision stamp all appear here.</li>
-    <li><b>A4</b> &mdash; The expired sheet carries a diagonal watermark, so a stale PDF sitting in an inbox cannot read as live pricing.</li>
-    <li><b>A5</b> &mdash; "Print this now" runs the real @media print stylesheet against view 4. Try it from any view.</li>
+    <span class="hd">View 5 &mdash; the PDF.</span>
+    <li><b>A1</b> &mdash; Same order as the page: header, prepared for, product and configuration, the breakdown, the totals, terms. Black on white, hairline rules, no background fills.</li>
+    <li><b>A2</b> &mdash; The breakdown is expanded, because a printed document cannot be opened.</li>
+    <li><b>A3</b> &mdash; The footer carries the short link beside a QR to the same URL and states its own generation date.</li>
+    <li><b>A4</b> &mdash; Delivery and saved details print; their controls do not. The expired sheet carries a diagonal watermark.</li>
+    <li><b>A5</b> &mdash; "Print this now" runs the real @media print stylesheet against view 4, from any view.</li>
   </div>
 </div>
 
 <div class="pdf-stage">
   <div class="sheet" id="pdfSheet">
     <div class="watermark"><span>Expired Oct 3, 2026</span></div>
-    <div class="runhd"><span>Quote Q-48213 &middot; PromotionPros</span><span>Page 1 of 2</span></div>
+    <div class="runhd"><span>Quote Q-48213 &middot; PromotionPros</span><span>Page 1 of 1</span></div>
     <div class="letterhead">
-      <div>
-        <div class="logo" style="font-size:22px">Promotion<span class="o">Pros</span><span class="tag">Put your brand on it.</span></div>
-      </div>
+      <div><div class="logo" style="font-size:22px">Promotion<span class="o">Pros</span><span class="tag">Put your brand on it.</span></div></div>
       <div class="addrblock">131 N Main St<br>West Bend, WI 53095<br>262-429-1300<br>info@promotionpros.com</div>
     </div>
 
     <h1>Quote Q-48213</h1>
     <p class="pmeta">Issued Sep 3, 2026 &nbsp;&middot;&nbsp; Valid through Oct 3, 2026</p>
-    <p class="pstamp" id="pdfStamp" style="display:none"></p>
+    <p class="pstamp" id="pdfStamp" hidden></p>
 
     <div class="psec">
       <h2>Prepared for</h2>
@@ -1249,16 +1171,18 @@ table.items tr.softrow td{color:var(--body)}
     </div>
 
     <div class="psec">
-      <table class="items">
-        <caption class="sr">Quote Q-48213 line items</caption>
-        <thead><tr><th scope="col">Item</th><th scope="col" class="r">Qty</th><th scope="col" class="r">Unit price</th><th scope="col" class="r">Amount</th></tr></thead>
-        <tbody id="pdfItems"></tbody>
-      </table>
+      <h2>Price breakdown</h2>
+      <div id="pdfBreakdown"></div>
+    </div>
+
+    <div class="psec">
+      <h2>Totals</h2>
+      <div id="pdfTotals"></div>
     </div>
 
     <div class="psec">
       <h2>Terms</h2>
-      <ul class="terms" id="pdfTerms"></ul>
+      <ul class="q-terms" id="pdfTerms"></ul>
     </div>
 
     <div class="pfoot">
@@ -1281,54 +1205,48 @@ table.items tr.softrow td{color:var(--body)}
       </svg>
     </div>
   </div>
-  <p class="note" style="max-width:816px">Letter, 8.5&Prime; &times; 11&Prime;. Page 2 carries the terms and footer when page 1 overflows. The thumbnail renders at 150dpi minimum in the generated file.</p>
+  <p class="note" style="max-width:816px">Letter, 8.5&Prime; &times; 11&Prime;. The attachment is a server-side headless print of the same DOM, so the PDF cannot drift from the page.</p>
 </div>
 </section>
 
 <!-- ============================================================
-     VIEW 6 — EMAIL (V5).
-     Transactional, not marketing. Adding delivery or details does not send a
-     second email on its own; "Email me the updated PDF" re-sends this same
-     template with an "Updated:" subject prefix.
+     VIEW 6 — EMAIL. Transactional, mirroring the simplified
+     structure: one summary block in the same vocabulary.
      ============================================================ -->
 <section class="view" id="view-email">
 <div class="wrap">
   <div class="state-chips">
     <span class="lbl">Message:</span>
     <button class="chip on" id="chipMailFirst">Initial</button>
-    <button class="chip" id="chipMailUpdated">Re-sent after a module save</button>
+    <button class="chip" id="chipMailUpdated">Re-sent after delivery is added</button>
   </div>
   <div class="ann-list">
     <span class="hd">View 6 &mdash; the email that carries the quote.</span>
-    <li><b>A1</b> &mdash; The subject carries product, quantity and reference number. A buyer searching their inbox three weeks later finds it on any of the three.</li>
-    <li><b>A2</b> &mdash; Both a link and an attachment: the buyer keeps the live link, the approver gets the forwardable PDF. The attachment line names that job out loud.</li>
-    <li><b>A3</b> &mdash; A module save never sends this unasked. Pressing "Email me the updated PDF" on the quote page re-sends the same template, prefixed "Updated:", with the delivery line filled in.</li>
-    <li><b>A4</b> &mdash; 600px single-column table layout, explicit background colors, no white-on-white logo &mdash; dark-mode safe in Outlook and Apple Mail.</li>
+    <li><b>A1</b> &mdash; The subject carries product, quantity and reference number, so an inbox search on any of the three finds it.</li>
+    <li><b>A2</b> &mdash; Both a link and an attachment: the buyer keeps the live link, the approver gets the forwardable PDF.</li>
+    <li><b>A3</b> &mdash; Adding delivery sends nothing on its own. "Email me the updated PDF" re-sends this template with an "Updated:" prefix.</li>
+    <li><b>A4</b> &mdash; 600px single column, explicit background colors, no white-on-white logo &mdash; dark-mode safe in Outlook and Apple Mail.</li>
   </div>
 </div>
 <div class="mail-stage">
   <div class="mail-chrome">
     <p class="subj" id="mailSubj"></p>
-    <p class="from" id="mailFrom">PromotionPros &lt;quotes@promotionpros.com&gt; &middot; to dana@acme.com &middot; Sep 3, 2026</p>
+    <p class="from" id="mailFrom"></p>
     <p class="pre" id="mailPre"></p>
   </div>
 
   <div class="mail-body">
     <div class="logo" style="font-size:22px;margin-bottom:24px">Promotion<span class="o">Pros</span><span class="tag">Put your brand on it.</span></div>
     <p>Hi Dana,</p>
-    <p id="mailLede">Here's your quote for 250 Del Mar Bamboo Stylus Pens, pad printed in 2 colors on the barrel.</p>
-
+    <p id="mailLede"></p>
     <div class="mail-sum" id="mailSum"></div>
-
     <a class="mail-btn" href="#" onclick="go('quote');return false">View quote online</a>
     <p>This price is honored at checkout through Oct 3, 2026.</p>
-
     <div class="mail-attach">
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5 2.5h6l4 4v11H5z" stroke="#525252" stroke-width="1.5" stroke-linejoin="round"/><path d="M11 2.5v4h4" stroke="#525252" stroke-width="1.5" stroke-linejoin="round"/></svg>
       <span><b style="color:#111">PromotionPros-Quote-Q-48213.pdf</b> &middot; 214 KB</span>
     </div>
     <p>The PDF is attached, so you can forward it for approval.</p>
-
     <div class="mail-sig">Terry Alvarez<br>PromotionPros<br>312-555-0148 &middot; terry@promotionpros.com</div>
   </div>
   <p class="mail-foot">You're getting this because you requested a quote at promotionpros.com.</p>
@@ -1339,11 +1257,10 @@ table.items tr.softrow td{color:var(--body)}
 
 <script>
 /* ============================================================
-   MOCK DATA — spec values kept verbatim so the prototype reads as one
-   order: 250 pieces @ $2.18 = $545.00 goods, 2 imprint colors run
-   $87.50, setup $60.00, subtotal $692.50. Delivery is no longer part
-   of the request surface, so the quote arrives at $692.50 and becomes
-   $731.10 only once the quote page's delivery module is used.
+   MOCK DATA — 250 pieces @ $2.18 = $545.00 goods, 2 imprint colors
+   run $87.50, setup $60.00, subtotal $692.50. Delivery is asked for
+   on the quote page, so the quote arrives at $692.50 and becomes
+   $731.10 only once the delivery checkbox is used.
    ============================================================ */
 var TIERS = [[100,2.68],[250,2.18],[500,1.98],[1000,1.79],[2500,1.64],[5000,1.52],[10000,1.44]];
 var MOQ = 100, MAX_TIER = 10000;
@@ -1353,21 +1270,20 @@ var COLORS = [
   {id:'black',   name:'Black barrel',   hex:'#111111'},
   {id:'white',   name:'White accent',   hex:'#F2F2F2'}
 ];
-/* Imprint locations are PRODUCT DATA, so this is the pen's own list — not the tumbler's.
-   What production owns here is the control idiom (a combobox, not a swatch group), the
-   label formatting, the step names, and the reset-to-first-option on method change.
-   "No Imprint" is production's per-product opt-out and is offered wherever the data has it. */
+/* Imprint locations are PRODUCT DATA — this is the pen's own list.
+   Production owns the control idiom, the label formatting and the
+   reset-to-first-option on method change, not the option values. */
 var LOC_ORDER = ['barrel','clip','cap','none'];
 var LOCS = {'barrel':'Barrel', 'clip':'Clip', 'cap':'Cap', 'none':'No Imprint'};
-/* maxColors 0 = a non-count idiom (Full Color), which switches the Imprint Colors row wording */
+/* maxColors 0 = a non-count idiom (Full Color) */
 var METHODS = {
-  pad:    {name:'Pad Printed',    prose:'pad printing',    sub:'Up to 4 colors · 5 locations',
-           maxColors:4, setup:60, run:0.35, extraSetup:60, extraRun:0.35},
-  screen: {name:'Screen Printed', prose:'screen printing', sub:'Up to 3 colors · 5 locations',
-           maxColors:3, setup:75, run:0.42, extraSetup:75, extraRun:0.42},
-  laser:  {name:'Laser Engraved', prose:'laser engraving', sub:'One color · first location included',
-           maxColors:1, setup:0, run:0, extraSetup:0, extraRun:1.25, firstFree:true},
-  dyesub: {name:'Full-Color Dye Sublimation', prose:'full-color dye sublimation', sub:'Full color · quoted per job',
+  pad:    {name:'Pad Printed',    prose:'pad printing',    hint:'Setup $60.00 · each color past the first adds $0.35 a piece',
+           maxColors:4, setup:60, run:0.35},
+  screen: {name:'Screen Printed', prose:'screen printing', hint:'Setup $75.00 · each color past the first adds $0.42 a piece',
+           maxColors:3, setup:75, run:0.42},
+  laser:  {name:'Laser Engraved', prose:'laser engraving', hint:'First imprint included · one color only',
+           maxColors:1, setup:0, run:0, firstFree:true},
+  dyesub: {name:'Full-Color Dye Sublimation', prose:'full-color dye sublimation', hint:'Full color · quoted per job',
            maxColors:0, setup:0, run:0, cfp:true}
 };
 var MORDER = ['pad','screen','laser','dyesub'];
@@ -1380,11 +1296,11 @@ var S = {
   tab:'pdp', entry:'C', cfgComplete:true, submitted:false,
   qty:250, color:'natural', method:'pad', loc:'barrel', colors:2, pms:false,
   decorationTouched:true, ratesAvailable:true,
-  notices:[],
+  dOpen:null, dNotices:[],
   inst:{},
-  quote:{state:'valid', arrival:true, rep:'named', mail:'first',
-         del:{stage:'none', chosen:'ground', zip:''},
-         det:{added:false, company:'', phone:'', needby:''},
+  quote:{state:'valid', arrival:true, rep:'named', mail:'first', prodOpen:false,
+         del:{on:false, stage:'address', chosen:'ground', zip:''},
+         det:{open:false, added:false, company:'', phone:'', needby:''},
          cfg:null}
 };
 function newInst(){ return {name:'', email:'', touched:{}}; }
@@ -1394,22 +1310,36 @@ var $ = function(id){ return document.getElementById(id); };
 var fmt = function(n){ return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); };
 var esc = function(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); };
 var num = function(n){ return n.toLocaleString('en-US'); };
+function show(el, on){ if (on) el.removeAttribute('hidden'); else el.setAttribute('hidden',''); }
+
+/* the pen, at any size — one asset, no external dependency */
+function penSVG(w){
+  var h = Math.round(w * 1.65);
+  return '<svg width="' + w + '" height="' + h + '" viewBox="0 0 230 380" aria-hidden="true">' +
+    '<rect x="96" y="52" width="38" height="252" rx="19" fill="#D8BC8E"/>' +
+    '<path d="M96 304h38l-19 46z" fill="#B58F58"/>' +
+    '<rect x="96" y="24" width="38" height="30" rx="8" fill="#5A5A5A"/>' +
+    '<rect x="130" y="60" width="9" height="86" rx="4.5" fill="#9A9A9A"/></svg>';
+}
 
 /* ---------- pricing ---------- */
 function unitFor(q){ var u = TIERS[0][1]; for (var i=0;i<TIERS.length;i++){ if (q >= TIERS[i][0]) u = TIERS[i][1]; } return u; }
+function tierBand(q){
+  var lo = TIERS[0][0], hi = null;
+  for (var i=0;i<TIERS.length;i++){ if (q >= TIERS[i][0]){ lo = TIERS[i][0]; hi = TIERS[i+1] ? TIERS[i+1][0] - 1 : null; } }
+  return num(lo) + (hi ? '–' + num(hi) : ' and up') + ': ' + fmt(unitFor(q)) + ' each';
+}
 function isSpecialist(){ return S.qty > MAX_TIER || !!METHODS[S.method].cfp; }
 function colorName(){ return COLORS.filter(function(c){ return c.id === S.color; })[0].name; }
 function methodName(){ return METHODS[S.method].name; }
 function locName(){ return LOCS[S.loc]; }
 function noImprint(){ return S.loc === 'none'; }
-/* production's Imprint Colors row is a computed read-only label, in Title Case */
 function colorsLabel(){
   var m = METHODS[S.method];
   if (noImprint()) return 'None';
   if (m.maxColors === 0) return 'Full Color';
   return (S.colors === 1) ? '1 Color' : S.colors + ' Colors';
 }
-/* production's breakdown line 3: "Imprint 1 — Back, 1-color Screen Printed" */
 function imprintLine(){
   var m = METHODS[S.method];
   if (noImprint()) return 'No imprint';
@@ -1422,7 +1352,7 @@ function price(){
   var setup = noImprint() ? 0 : m.setup;
   return {unit:u, goods:goods, run:run, runEach:m.run, extra:extra, setup:setup, sub:goods + run + setup};
 }
-/* the quote is a locked artifact: it holds a snapshot, not a live read of the PDP */
+/* the quote is a locked artifact: a snapshot, not a live read of the PDP */
 function snapshot(){
   var p = price(), m = METHODS[S.method];
   return {qty:S.qty, color:colorName(), method:methodName(), prose:m.prose, loc:locName(),
@@ -1432,26 +1362,30 @@ function snapshot(){
 }
 function qRate(){
   var d = S.quote.del;
-  if (d.stage !== 'chosen' || !S.ratesAvailable) return null;
+  if (!d.on || d.stage !== 'chosen' || !S.ratesAvailable) return null;
   return RATES.filter(function(r){ return r.id === d.chosen; })[0];
 }
 function qTotal(){ var r = qRate(); return S.quote.cfg.sub + (r ? r.cost : 0); }
 function totalLabel(){ return qRate() ? 'Total with delivery' : 'Total Price'; }
+/* the configuration as one line — used in C, on page D's mobile bar and on the quote row */
+function configLine(c){
+  return num(c.qty) + ' pieces · ' + c.method + ' · ' + c.loc + ' · ' + c.colorsLabel;
+}
 
 /* ============================================================
    VIEW SWITCHING + prototype chrome
    ============================================================ */
 var HELP = {
-  pdp:'<b>View 1 &mdash; PDP.</b> The lead row sits above Add to cart. The "Quote entry" chips choose which modal the button opens; the "Configurator" chip demonstrates the disabled state with its reason.',
-  modc:'<b>View 2 &mdash; Quote modal, Option C.</b> A 480px user-initiated modal over the scrimmed PDP. Nothing is editable: one configuration line, the total with its unit price, a breakdown disclosure, two fields, one CTA. "Change" returns to the PDP configurator.',
-  modd:'<b>View 3 &mdash; Quote modal, Option D.</b> 640px, pinned footer, production step order 1&ndash;4. Quantity, decoration method and imprint location are the production controls and re-price live; color and imprint colors are read-only. Change the location, then change the method, to see production\'s own location reset announced.',
-  quote:'<b>View 4 &mdash; Quote page.</b> Four document states, an unresolvable link, and the two optional modules: Calculate delivery and Add details. Both keep the quote number and stamp the document. Print runs the real print stylesheet.',
-  pdf:'<b>View 5 &mdash; PDF.</b> A Letter-size preview of the print stylesheet applied to view 4, mirroring whatever module states are set there. "Print this now" runs it for real.',
+  pdp:'<b>View 1 &mdash; PDP.</b> The lead row sits above Add to cart. The "Quote entry" chips choose the surface: <b>Modal C</b> opens over this page, <b>Page D</b> navigates to a full page.',
+  modc:'<b>View 2 &mdash; Quote modal (C).</b> 760px and two columns, so nothing scrolls at 1280&times;800. Nothing is editable: the configuration in one sentence, the figure with production\'s labels, a breakdown disclosure, two fields, one CTA. "Change" returns to the PDP configurator.',
+  paged:'<b>View 3 &mdash; the editable quote page.</b> A page, not a modal. Quantity, decoration method and location each sit behind a <b>Change</b> that reveals one compact control; color and imprint colors change on the product page. Change the location to Cap, then pick Laser Engraved, to see production\'s own reset announced.',
+  quote:'<b>View 4 &mdash; the issued quote.</b> Header, actions, a collapsed product row, totals, the delivery checkbox, optional details, terms. No line-item table. The shipping row links to the delivery checkbox instead of contradicting it.',
+  pdf:'<b>View 5 &mdash; PDF.</b> The same structure with the breakdown expanded, mirroring whatever delivery and details states view 4 is in. "Print this now" runs the real print stylesheet.',
   email:'<b>View 6 &mdash; Email.</b> The transactional message that carries the link and the attachment, in its initial and its re-sent form.'
 };
 function go(v){
   S.tab = v;
-  var target = (v === 'modc' || v === 'modd') ? 'pdp' : v;
+  var target = (v === 'modc') ? 'pdp' : v;
   var s = document.querySelectorAll('.view');
   for (var i=0;i<s.length;i++) s[i].classList.remove('on');
   $('view-' + target).classList.add('on');
@@ -1459,8 +1393,8 @@ function go(v){
   for (var j=0;j<t.length;j++) t[j].classList.toggle('on', t[j].dataset.v === v);
   $('protoHelp').innerHTML = HELP[v];
   closeModal(true);
-  if (v === 'modc'){ setEntry('C'); openModal('C'); }
-  else if (v === 'modd'){ setEntry('D'); openModal('D'); }
+  if (v === 'modc'){ setEntry('C'); openModal(); }
+  if (v === 'paged') setEntry('D');
   window.scrollTo({top:0});
 }
 (function(){
@@ -1504,22 +1438,9 @@ function tierHTML(){
   });
   return '<tbody>' + minRow + '</tr>' + priceRow + '</tr></tbody>';
 }
-/* a tier table rendered while its modal was hidden measures 0, so re-cue on open */
-function refreshTierCues(){
-  var rails = document.querySelectorAll('.tier-rail');
-  for (var i=0;i<rails.length;i++){
-    var wrap = rails[i].firstElementChild;
-    var over = wrap.scrollWidth - wrap.clientWidth > 1;
-    rails[i].classList.toggle('scrollable', over);
-    rails[i].classList.toggle('at-end', over && wrap.scrollLeft >= wrap.scrollWidth - wrap.clientWidth - 1);
-  }
-}
 function wireTier(tbl, after){
   var b = tbl.querySelectorAll('button');
-  for (var i=0;i<b.length;i++) b[i].addEventListener('click', function(){
-    S.qty = parseInt(this.dataset.q, 10); after();
-  });
-  /* the tier table scrolls inside its own rail on narrow screens; the fade says so */
+  for (var i=0;i<b.length;i++) b[i].addEventListener('click', function(){ S.qty = parseInt(this.dataset.q, 10); after(); });
   var wrap = tbl.parentNode, rail = wrap.parentNode;
   function cue(){
     var over = wrap.scrollWidth - wrap.clientWidth > 1;
@@ -1527,8 +1448,7 @@ function wireTier(tbl, after){
     rail.classList.toggle('at-end', over && wrap.scrollLeft >= wrap.scrollWidth - wrap.clientWidth - 1);
   }
   if (!wrap.dataset.cued){ wrap.dataset.cued = '1'; wrap.addEventListener('scroll', cue); window.addEventListener('resize', cue); }
-  cue();
-  setTimeout(cue, 0);
+  cue(); setTimeout(cue, 0);
 }
 function renderPDP(){
   var p = price(), m = METHODS[S.method];
@@ -1548,7 +1468,6 @@ function renderPDP(){
   $('pdpDecNote').textContent = p.setup > 0
     ? 'Imprint Method Setup: ' + fmt(p.setup) + ' per location.' + (m.run > 0 ? ' Each imprint color past the first adds ' + fmt(m.run) + ' per piece.' : '')
     : 'First imprint included, so there is no setup charge for this decoration method.';
-  /* production exposes the PMS control on the PDP, not in the quote surface */
   var pmsOK = m.maxColors > 0 && !noImprint();
   $('pdpPmsHost').innerHTML = pmsOK
     ? '<label class="cbx" for="pdpPms"><input type="checkbox" id="pdpPms"' + (S.pms ? ' checked' : '') +
@@ -1560,12 +1479,11 @@ function renderPDP(){
   var dis = !S.cfgComplete;
   $('btnSample').disabled = dis; $('btnQuote').disabled = dis;
   $('leadHelper').textContent = dis ? 'Choose a product color to continue' : 'Priced now, good for 30 days';
-  $('leadHelper').style.color = dis ? 'var(--body)' : 'var(--helper)';
 }
 $('pdpQty').addEventListener('input', function(){
   var v = parseInt(this.value, 10); if (!isNaN(v) && v > 0){ S.qty = v; renderAll(); }
 });
-$('btnQuote').addEventListener('click', function(){ go(S.entry === 'C' ? 'modc' : 'modd'); });
+$('btnQuote').addEventListener('click', function(){ go(S.entry === 'C' ? 'modc' : 'paged'); });
 $('btnSample').addEventListener('click', function(){ alert('Existing sample flow — out of scope for this prototype.\nSee design/prototypes/2026-07-30-sample-request-flow/'); });
 function setEntry(e){ S.entry = e; $('chipEntryC').classList.toggle('on', e === 'C'); $('chipEntryD').classList.toggle('on', e === 'D'); }
 $('chipEntryC').addEventListener('click', function(){ setEntry('C'); });
@@ -1607,9 +1525,9 @@ function contactValid(k){ var i = S.inst[k]; return i.name.trim() !== '' && emai
 function qtyValid(){ return S.qty >= MOQ; }
 
 /* ============================================================
-   SHARED PRICE RENDERER — one itemisation for C's disclosure,
-   D's footer disclosure and the quote document, so three surfaces
-   showing one number cannot disagree.
+   SHARED PRICE RENDERER — production's Price-breakdown lines,
+   feeding C, page D, the quote row, the PDF and the email, so
+   five surfaces showing one number cannot disagree.
    ============================================================ */
 function bdRow(lab, q, u, amt, cls){
   return '<div class="bd-row' + (cls ? ' ' + cls : '') + '"><span class="lab">' + lab + '</span>' +
@@ -1617,20 +1535,22 @@ function bdRow(lab, q, u, amt, cls){
     '<span class="amt">' + (amt || '') + '</span></div>';
 }
 var FREE = '<span class="free">Free</span>';
-/* the production "Price breakdown" dialog, line for line (capture 2026-09-03) */
-function breakdownHTML(){
-  var p = price(), m = METHODS[S.method], h = '';
-  h += bdRow('Base Item Price', num(S.qty) + ' &times;', fmt(p.unit), fmt(p.goods));
-  h += bdRow('Decoration method: ' + esc(m.name), '', '', '', 'lo');
-  h += bdRow('<b>Imprint 1</b> &nbsp; ' + esc(imprintLine()), '', '', '', 'lo');
-  h += bdRow('Imprint Method Setup', '', '', p.setup > 0 ? fmt(p.setup) : FREE);
-  h += bdRow('Imprint Method Run Charge', p.run > 0 ? num(S.qty) + ' &times;' : '',
-             p.run > 0 ? fmt(p.runEach) : '', p.run > 0 ? fmt(p.run) : FREE);
-  if (S.pms) h += bdRow('Pantone/PMS color match', '', '', '<span class="free">Applied at proofing</span>', 'lo');
-  h += '<div class="bd-tot"><span class="k">Total Price</span><span class="v">' + fmt(p.sub) + '</span></div>';
-  h += '<div class="bd-avg"><span>Average price per unit</span><span>' + fmt(p.sub / S.qty) + ' per unit</span></div>';
-  h += '<p class="bd-foot">Taxes and delivery costs are not included. They will be calculated at checkout.</p>';
+function breakdownFrom(c){
+  var h = '';
+  h += bdRow('Base Item Price', num(c.qty) + ' &times;', fmt(c.unit), fmt(c.goods));
+  h += bdRow('Decoration method: ' + esc(c.method), '', '', '', 'lo');
+  h += bdRow('<b>Imprint 1</b> &nbsp; ' + esc(c.imprintLine), '', '', '', 'lo');
+  h += bdRow('Imprint Method Setup', '', '', c.setup > 0 ? fmt(c.setup) : FREE);
+  h += bdRow('Imprint Method Run Charge', c.run > 0 ? num(c.qty) + ' &times;' : '',
+             c.run > 0 ? fmt(c.runEach) : '', c.run > 0 ? fmt(c.run) : FREE);
+  if (c.pms) h += bdRow('Pantone/PMS color match', '', '', '<span class="free">Applied at proofing</span>', 'lo');
+  h += '<div class="bd-tot"><span class="k">Total Price</span><span class="v">' + fmt(c.sub) + '</span></div>';
+  h += '<div class="bd-avg"><span>Average price per unit</span><span>' + fmt(c.sub / c.qty) + ' per unit</span></div>';
   return h;
+}
+function breakdownHTML(){
+  return breakdownFrom(snapshot()) +
+    '<p class="bd-foot">Taxes and delivery costs are not included. They will be calculated at checkout.</p>';
 }
 function specialistHTML(){
   var reason = METHODS[S.method].cfp
@@ -1638,149 +1558,183 @@ function specialistHTML(){
     : 'Quantities above 10,000 are priced by hand, so this one doesn\'t price instantly.';
   return '<div class="sp-block"><h3>This configuration needs a specialist</h3><p>' + reason + '</p></div>';
 }
+function ro(k, v){ return '<div class="rorow"><span class="k">' + k + '</span><span class="v">' + esc(v) + '</span></div>'; }
 function echoHTML(){
   return ro('Product', 'Del Mar Bamboo Stylus Pen') + ro('Quantity', num(S.qty) + ' pieces') +
          ro('Color', colorName()) + ro('Decoration method', methodName()) +
          ro('Imprint location', locName()) + ro('Imprint Colors', colorsLabel()) +
          (S.pms ? ro('Pantone/PMS color match', 'Yes') : '');
 }
-function ro(k, v){ return '<div class="rorow"><span class="k">' + k + '</span><span class="v">' + esc(v) + '</span></div>'; }
 function bandHTML(cls, txt){
-  return '<div class="band ' + cls + '" style="margin-bottom:14px">' +
+  return '<div class="band ' + cls + '">' +
     '<svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M8 7.2v4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="4.6" r=".95" fill="currentColor"/></svg>' +
     '<span>' + txt + '</span></div>';
 }
-
-/* ============================================================
-   OPTION C — lean modal. No controls, so nothing here re-prices.
-   ============================================================ */
-function renderC(){
-  var m = METHODS[S.method], sp = isSpecialist();
-  /* C-02, in production's own vocabulary: method name, location, Imprint Colors label */
-  $('cSummary').innerHTML = '<b>Del Mar Bamboo Stylus Pen</b> · ' + esc(colorName()) + ' · ' + num(S.qty) +
-    ' pieces · ' + esc(methodName()) + ', ' + esc(locName()) + ', ' + esc(colorsLabel()) +
-    (S.pms ? ' · Pantone/PMS match' : '');
-  /* the defaulted decoration is spelled out in words above the total, never left implicit */
-  $('cNotice').innerHTML = S.decorationTouched ? '' : bandHTML('band-amber',
-    'This quote prices the default decoration: pad printing, Barrel, 1 Color. ' +
-    '<button class="linkbtn" id="cNoticeChange">Change it on the product page</button>.');
-  if ($('cNoticeChange')) $('cNoticeChange').addEventListener('click', backToConfigurator);
-
-  var p = price();
-  $('cPrice').style.display = sp ? 'none' : 'block';
-  $('cSpecialist').innerHTML = sp ? specialistHTML() : '';
-  $('cTotal').textContent = fmt(p.sub);
-  $('cEach').textContent = fmt(p.unit);
-  $('cDiscBody').innerHTML = breakdownHTML();
-  $('cEcho').innerHTML = echoHTML();
-  $('cMain').style.display = S.submitted ? 'none' : 'block';
-  $('cConfirm').style.display = S.submitted ? 'block' : 'none';
-}
-$('cDisc').addEventListener('click', function(){ toggleDisc(this, $('cDiscBody')); });
-$('dDisc').addEventListener('click', function(){ toggleDisc(this, $('dDiscBody')); });
 function toggleDisc(btn, body){
   var open = body.classList.toggle('open');
   btn.setAttribute('aria-expanded', open ? 'true' : 'false');
 }
 
 /* ============================================================
-   OPTION D — editable core config on production's own controls.
+   V2 — MODAL C. No controls, so nothing here re-prices.
    ============================================================ */
+function renderC(){
+  var sp = isSpecialist(), p = price();
+  $('cThumb').innerHTML = penSVG(30);
+  $('cSummary').innerHTML = esc(colorName()) + ' · <b>' + num(S.qty) + ' pieces</b> · ' +
+    esc(methodName()) + ' · ' + esc(locName()) + ' · ' + esc(colorsLabel()) +
+    (S.pms ? ' · Pantone/PMS match' : '');
+  $('cNotice').innerHTML = S.decorationTouched ? '' : bandHTML('band-amber',
+    'This quote prices the default decoration: pad printing, Barrel, 1 Color. ' +
+    '<button class="linkbtn" id="cNoticeChange">Change it on the product page</button>.');
+  if ($('cNoticeChange')) $('cNoticeChange').addEventListener('click', backToConfigurator);
+  show($('cPrice'), !sp);
+  $('cSpecialist').innerHTML = sp ? specialistHTML() : '';
+  $('cTotal').textContent = fmt(p.sub);
+  $('cEach').textContent = fmt(p.unit);
+  $('cDiscBody').innerHTML = breakdownHTML();
+  $('cEcho').innerHTML = echoHTML();
+  show($('cMain'), !S.submitted);
+  show($('cConfirm'), S.submitted);
+}
+$('cDisc').addEventListener('click', function(){ toggleDisc(this, $('cDiscBody')); });
+
+/* ============================================================
+   V3 — PAGE D. Three editable values, each behind its own
+   Change disclosure. The card is a list of values until a
+   control is asked for, which is what keeps the page readable.
+   ============================================================ */
+function vrow(key, k, v, editable){
+  var open = (S.dOpen === key);
+  var right = editable
+    ? '<button class="linkbtn" data-drow="' + key + '" aria-expanded="' + open + '" aria-controls="dctl-' + key + '">' +
+      (open ? 'Done' : 'Change') + '</button>'
+    : '<a class="ro-hint" href="#" data-dpdp="1">Change on product page</a>';
+  return '<div class="vrow"><div class="vrow-main">' +
+    '<span class="vrow-k">' + k + '</span><span class="vrow-v">' + esc(v) + '</span>' + right + '</div>' +
+    '<div class="vrow-ctl" id="dctl-' + key + '"' + (open ? '' : ' hidden') + '>' + (open ? ctlHTML(key) : '') + '</div></div>';
+}
+function ctlHTML(key){
+  if (key === 'qty'){
+    return '<label class="lbl sr" for="dQty">Quantity</label>' +
+      '<div class="ctl-line"><input type="number" id="dQty" inputmode="numeric" min="100" step="1" value="' + S.qty + '"></div>' +
+      '<p class="errmsg" id="dQtyErr" style="display:' + (qtyValid() ? 'none' : 'block') + '">Quantity starts at 100 pieces for this product</p>' +
+      '<p class="ctl-hint">' + tierBand(S.qty) + '</p>' +
+      '<div class="ctl-done"><button class="btn-mini" data-ddone="1">Done</button></div>';
+  }
+  if (key === 'method'){
+    return '<p class="lbl sr" id="dMethodLbl">Decoration method</p><div class="opts" role="radiogroup" aria-labelledby="dMethodLbl">' +
+      MORDER.map(function(id){
+        var m = METHODS[id];
+        return '<label class="opt"><input type="radio" name="dmethod" value="' + id + '"' + (S.method === id ? ' checked' : '') + '>' +
+          '<span><span class="t">' + esc(m.name) + '</span><span class="m">' + esc(m.hint) + '</span></span></label>';
+      }).join('') + '</div><div class="ctl-done"><button class="btn-mini" data-ddone="1">Done</button></div>';
+  }
+  return '<p class="lbl sr" id="dLocLbl">Imprint location</p><div class="opts" role="radiogroup" aria-labelledby="dLocLbl">' +
+    LOC_ORDER.map(function(id){
+      return '<label class="opt"><input type="radio" name="dloc" value="' + id + '"' + (S.loc === id ? ' checked' : '') + '>' +
+        '<span><span class="t">' + LOCS[id] + '</span></span></label>';
+    }).join('') + '</div><div class="ctl-done"><button class="btn-mini" data-ddone="1">Done</button></div>';
+}
 function renderD(){
-  var m = METHODS[S.method], p = price(), sp = isSpecialist();
+  var p = price(), sp = isSpecialist();
+  $('dThumb').innerHTML = penSVG(38);
+  $('dRows').innerHTML =
+    vrow('qty',    'Quantity',          num(S.qty) + ' pieces', true) +
+    vrow('method', 'Decoration method', methodName(),           true) +
+    vrow('loc',    'Location',          locName(),              true) +
+    vrow('color',  'Product color',     colorName(),            false) +
+    vrow('colors', 'Imprint Colors',    colorsLabel(),          false);
 
-  $('dRo').innerHTML = ro('Color', colorName());
+  var rb = $('dRows').querySelectorAll('[data-drow]');
+  for (var i=0;i<rb.length;i++) rb[i].addEventListener('click', function(){
+    var k = this.dataset.drow;
+    S.dOpen = (S.dOpen === k) ? null : k;
+    renderD(); focusCtl();
+  });
+  var pl = $('dRows').querySelectorAll('[data-dpdp]');
+  for (var j=0;j<pl.length;j++) pl[j].addEventListener('click', function(e){ e.preventDefault(); go('pdp'); backToConfigurator(); });
+  var dn = $('dRows').querySelectorAll('[data-ddone]');
+  for (var n=0;n<dn.length;n++) dn[n].addEventListener('click', function(){
+    var k = S.dOpen; S.dOpen = null; renderD();
+    var back = $('dRows').querySelector('[data-drow="' + k + '"]'); if (back) back.focus();
+  });
+  if ($('dQty')){
+    $('dQty').addEventListener('input', function(){
+      var v = parseInt(this.value.replace(/[^\d]/g,''), 10);
+      if (!isNaN(v)){ S.qty = v; softRefreshD(); }
+    });
+  }
+  var mr = $('dRows').querySelectorAll('input[name=dmethod]');
+  for (var a=0;a<mr.length;a++) mr[a].addEventListener('change', function(){ changeMethod(this.value); });
+  var lr = $('dRows').querySelectorAll('input[name=dloc]');
+  for (var b=0;b<lr.length;b++) lr[b].addEventListener('change', function(){
+    S.loc = this.value; S.dNotices = []; renderAll(); announcePrice();
+  });
 
-  $('dTier').innerHTML = tierHTML();
-  wireTier($('dTier'), function(){ renderAll(); announcePrice(); });
-  if (document.activeElement !== $('dQty')) $('dQty').value = num(S.qty);
-  $('dQtyField').classList.toggle('err', !qtyValid());
-  $('dQtyField').querySelector('.inline-field').classList.toggle('err', !qtyValid());
-  $('dQty').setAttribute('aria-invalid', qtyValid() ? 'false' : 'true');
-  $('dUnit').textContent = fmt(p.unit);
-
-  $('dMethods').innerHTML = MORDER.map(function(id){
-    var mm = METHODS[id];
-    return '<button type="button" class="method-opt" data-m="' + id + '" aria-pressed="' + (S.method === id) + '">' +
-      esc(mm.name) + '<span class="sub">' + esc(mm.sub) + '</span></button>';
-  }).join('');
-  var mb = $('dMethods').querySelectorAll('.method-opt');
-  for (var i=0;i<mb.length;i++) mb[i].addEventListener('click', function(){ changeMethod(this.dataset.m); });
-
-  $('dBadge').textContent = colorsLabel();
-  /* the green-check note production shows for a method whose first imprint is included */
-  $('dIncluded').innerHTML = m.firstFree
-    ? '<div class="incl-note"><span>&#10003;</span><span><b>First imprint included</b> &mdash; one color, one location, no setup charge. ' +
-      'Add locations below &mdash; extras are priced separately.</span></div>'
-    : '';
-  function chg(v){ return v > 0 ? fmt(v) : FREE; }
-  $('dCharges').innerHTML = m.cfp
-    ? '<tr><td>First Location</td><td class="r">Quoted per job</td><td class="r">Quoted per job</td></tr>'
-    : '<tr><td>First Location</td><td class="r">' + chg(m.setup) + '</td><td class="r">' +
-        (m.run > 0 ? fmt(m.run) + ' / item' : FREE) + '</td></tr>' +
-      /* production prints Free (green) for an included first location and $0.00 for an extra one */
-      '<tr><td>Extra Location</td><td class="r">' + fmt(m.extraSetup) + '</td><td class="r">' +
-        (m.extraRun > 0 ? fmt(m.extraRun) + ' / item' : FREE) + '</td></tr>';
-
-  /* production offers every location to every method; the list does not vary */
-  $('dLoc').innerHTML = LOC_ORDER.map(function(id){
-    return '<option value="' + id + '"' + (S.loc === id ? ' selected' : '') + '>' + LOCS[id] + '</option>';
-  }).join('');
-  $('dImprintColors').textContent = colorsLabel();
-  $('dImprintCost').textContent = p.setup > 0 ? fmt(p.setup) : 'Free';
-  /* PMS is set on the PDP, never here; D only reports it */
-  $('dPms').innerHTML = S.pms
-    ? '<div class="pms-row"><span>&#10003;</span><span>Exact Pantone/PMS color match &mdash; $50.00 per color, applied at proofing. ' +
-      'Set on the product page.</span></div>'
-    : '';
-
-  $('dNotices').innerHTML = S.notices.map(function(t){ return bandHTML('band-info', t); }).join('');
+  $('dNotice').innerHTML = S.dNotices.map(function(t){ return bandHTML('band-info', t); }).join('');
   if ($('dNoticeChange')) $('dNoticeChange').addEventListener('click', backToConfigurator);
 
+  show($('dPrice'), !sp);
   $('dSpecialist').innerHTML = sp ? specialistHTML() : '';
+  $('dTotal').textContent = fmt(p.sub);
+  $('dEach').textContent = fmt(p.unit);
   $('dDiscBody').innerHTML = breakdownHTML();
-  $('dDisc').parentNode.style.display = sp ? 'none' : 'block';
-  if (sp){ $('dDiscBody').classList.remove('open'); $('dDisc').setAttribute('aria-expanded','false'); }
-  $('dFootK').textContent = sp ? 'Specialist quote' : 'Subtotal with Setup Fee:';
-  $('dFootV').textContent = sp ? '—' : fmt(p.sub);
-  $('dFootEa').textContent = sp ? '' : 'Price each: ' + fmt(p.unit);
+  $('dMobK').textContent = sp ? 'Specialist quote' : 'Subtotal with Setup Fee';
+  $('dMobTotal').textContent = sp ? '—' : fmt(p.sub);
   $('dEcho').innerHTML = echoHTML();
-  $('dMain').style.display = S.submitted ? 'none' : 'block';
-  $('dFooter').style.display = S.submitted ? 'none' : 'block';
-  $('dConfirm').style.display = S.submitted ? 'block' : 'none';
+  show($('dMain'), !S.submitted);
+  show($('dConfirm'), S.submitted);
+  show($('dMobBar'), !S.submitted);
 }
-$('dQty').addEventListener('input', function(){
-  var v = parseInt(this.value.replace(/[^\d]/g,''), 10);
-  if (!isNaN(v)){ S.qty = v; renderAll(); }
-});
-$('dQty').addEventListener('blur', function(){ renderAll(); });
-$('dLoc').addEventListener('change', function(){ S.loc = this.value; S.notices = []; renderAll(); announcePrice(); });
+/* typing in the quantity field must not tear down the field it is typed into */
+function softRefreshD(){
+  var p = price(), sp = isSpecialist();
+  show($('dPrice'), !sp);
+  $('dSpecialist').innerHTML = sp ? specialistHTML() : '';
+  $('dTotal').textContent = fmt(p.sub);
+  $('dEach').textContent = fmt(p.unit);
+  $('dDiscBody').innerHTML = breakdownHTML();
+  $('dMobK').textContent = sp ? 'Specialist quote' : 'Subtotal with Setup Fee';
+  $('dMobTotal').textContent = sp ? '—' : fmt(p.sub);
+  var row = $('dRows').querySelector('.vrow .vrow-v');
+  if (row) row.textContent = num(S.qty) + ' pieces';
+  var hint = $('dRows').querySelector('.ctl-hint');
+  if (hint) hint.textContent = tierBand(S.qty);
+  if ($('dQtyErr')) $('dQtyErr').style.display = qtyValid() ? 'none' : 'block';
+  renderPDP(); renderC(); renderCTAs();
+}
+function focusCtl(){
+  if (!S.dOpen) return;
+  var host = $('dctl-' + S.dOpen);
+  var el = host.querySelector('input');
+  if (el) el.focus();
+}
+$('dDisc').addEventListener('click', function(){ toggleDisc(this, $('dDiscBody')); });
 
-/* --- dependency handling: a clamp is never silent (§3 dependencies 1-3) --- */
+/* --- dependency handling: a clamp is never silent --- */
 function changeMethod(id){
   if (id === S.method) return;
   var mNew = METHODS[id], oldLoc = S.loc, oldColors = S.colors;
-  S.method = id; S.notices = []; S.decorationTouched = true;
+  S.method = id; S.dNotices = []; S.decorationTouched = true;
   setDecorationChip(true);
-  /* production discards the chosen location on every method change. D reproduces that,
-     but says so rather than letting the buyer discover it on the quote (D-20). */
+  /* production discards the chosen location on every method change */
   if (S.loc !== LOC_ORDER[0]){
     S.loc = LOC_ORDER[0];
-    S.notices.push(esc(mNew.name) + ' resets the imprint location. It changed from ' +
+    S.dNotices.push(esc(mNew.name) + ' resets the imprint location. It changed from ' +
       esc(LOCS[oldLoc]) + ' back to ' + esc(LOCS[S.loc]) + '.');
   }
   if (mNew.maxColors === 0) S.pms = false;
   if (mNew.maxColors > 0 && oldColors > mNew.maxColors){
     S.colors = mNew.maxColors;
-    /* D-21, with D-22 inside it */
     var head = (mNew.maxColors === 1)
       ? esc(mNew.name) + ' prints in one color. Imprint colors changed from ' + oldColors + ' to 1, and the run charge is removed.'
       : esc(mNew.name) + ' prints in up to ' + mNew.maxColors + ' colors. Imprint colors changed from ' + oldColors + ' to ' + mNew.maxColors + ', and the run charge is recalculated.';
-    S.notices.push(head + ' <button class="linkbtn" id="dNoticeChange">Change imprint colors on the product page</button>');
+    S.dNotices.push(head + ' <button class="linkbtn" id="dNoticeChange">Change imprint colors on the product page</button>');
   }
   renderAll();
   announcePrice();
-  if (S.notices.length) announce(S.notices.join(' ').replace(/<[^>]+>/g,''));
+  if (S.dNotices.length) announce(S.dNotices.join(' ').replace(/<[^>]+>/g,''));
 }
 function announcePrice(){ if (!isSpecialist()) announce('Price updated. New total ' + fmt(price().sub)); }
 function setDecorationChip(touched){
@@ -1790,7 +1744,7 @@ function setDecorationChip(touched){
 }
 
 /* ============================================================
-   CTA state — one rule, both modals
+   CTA state — one rule, both surfaces
    ============================================================ */
 function ctaState(k){
   var sp = isSpecialist(), ok = contactValid(k) && (k === 'C' || qtyValid());
@@ -1812,6 +1766,9 @@ function renderCTAs(){
     $(a[2]).style.display = c.reason ? 'block' : 'none';
     $(a[3]).textContent = c.promise;
   });
+  var d = ctaState('D');
+  $('dMobCta').textContent = d.label;
+  $('dMobCta').disabled = !d.enabled;
 }
 function renderAll(){ renderPDP(); renderC(); renderD(); renderCTAs(); }
 
@@ -1821,7 +1778,7 @@ function renderAll(){ renderPDP(); renderC(); renderD(); renderCTAs(); }
 function submit(k){
   validate(k);
   if (!contactValid(k)) { var bad = S.inst[k].name.trim() === '' ? 'name' : 'email'; $(bad + k).focus(); return; }
-  if (k === 'D' && !qtyValid()){ $('dQty').focus(); return; }
+  if (k === 'D' && !qtyValid()){ S.dOpen = 'qty'; renderD(); focusCtl(); return; }
   if (isSpecialist()){
     S.submitted = true;
     $('chipSubYes').classList.add('on'); $('chipSubNo').classList.remove('on');
@@ -1831,62 +1788,65 @@ function submit(k){
   S.quote.cfg = snapshot();
   S.quote.state = 'valid';
   S.quote.arrival = true;
-  S.quote.del = {stage:'none', chosen:'ground', zip:''};
-  S.quote.det = {added:false, company:'', phone:'', needby:''};
+  S.quote.prodOpen = false;
+  S.quote.del = {on:false, stage:'address', chosen:'ground', zip:''};
+  S.quote.det = {open:false, added:false, company:'', phone:'', needby:''};
   S.quote.mail = 'first';
+  S.ratesAvailable = true;
   syncQuoteChips();
-  renderQuoteAll();   /* the document, the PDF and the email all render from the new snapshot */
+  renderQuoteAll();
   closeModal();
   go('quote');
 }
 $('cSubmit').addEventListener('click', function(){ submit('C'); });
 $('dSubmit').addEventListener('click', function(){ submit('D'); });
+$('dMobCta').addEventListener('click', function(){ submit('D'); });
 
 /* ============================================================
-   MODAL MACHINERY — focus trap, Esc, backdrop, scroll lock.
-   Both dialogs share it; only one can be open.
+   MODAL MACHINERY — focus trap, Esc, backdrop, scroll lock
    ============================================================ */
-var openKey = null, lastFocus = null;
-function backOf(k){ return $(k === 'C' ? 'backC' : 'backD'); }
-/* Measured, never assumed. A rotate or a resize while a modal is open must not strand
-   the offset and leave the dialog header behind the prototype's sticky bar. */
+var openC = false, lastFocus = null;
 function setChromeVars(){
-  /* the prototype's sticky chrome and chip rail must not clip the dialog */
   var deck = document.querySelector('#view-pdp .chipdeck');
   var chrome = deck ? deck.getBoundingClientRect().bottom : $('protoHelp').getBoundingClientRect().bottom;
   document.documentElement.style.setProperty('--chrome', Math.max(0, chrome) + 'px');
-  /* the mobile sheet sits below the prototype's own bar, not below the chip rail */
   document.documentElement.style.setProperty('--chromebar', Math.max(0, $('protoHelp').getBoundingClientRect().bottom) + 'px');
 }
-window.addEventListener('resize', function(){ if (openKey) setChromeVars(); });
-window.addEventListener('orientationchange', function(){ if (openKey) setTimeout(setChromeVars, 0); });
-function openModal(k){
+/* the CTA block lives in the right column on desktop and in the dialog's own
+   footer below 960px. One node, moved — never two copies that can drift. */
+var footMQ = window.matchMedia('(max-width:960px)');
+function placeFoot(){
+  var foot = $('cFoot');
+  var host = footMQ.matches ? $('cFootSlot') : $('cRight');
+  if (foot.parentNode !== host) host.appendChild(foot);
+}
+if (footMQ.addEventListener) footMQ.addEventListener('change', placeFoot);
+window.addEventListener('resize', function(){ placeFoot(); if (openC) setChromeVars(); });
+window.addEventListener('orientationchange', function(){ if (openC) setTimeout(setChromeVars, 0); });
+function openModal(){
   lastFocus = document.activeElement;
   setChromeVars();
-  openKey = k;
-  backOf(k).classList.add('open');
+  openC = true;
+  $('backC').classList.add('open');
   document.body.classList.add('modal-open');
   document.body.style.overflow = 'hidden';
-  $(k === 'C' ? 'annC' : 'annD').classList.add('on');
+  $('annC').classList.add('on');
   document.querySelector('#view-pdp .pdp-grid').setAttribute('aria-hidden', 'true');
-  setTimeout(function(){ $(k === 'C' ? 'cTitle' : 'dTitle').focus(); refreshTierCues(); }, 30);
+  setTimeout(function(){ $('cDialog').focus(); }, 30);
 }
 function closeModal(silent){
-  if (!openKey) return;
-  backOf(openKey).classList.remove('open');
-  $(openKey === 'C' ? 'annC' : 'annD').classList.remove('on');
-  openKey = null;
+  if (!openC) return;
+  $('backC').classList.remove('open');
+  $('annC').classList.remove('on');
+  openC = false;
   document.body.classList.remove('modal-open');
   document.body.style.overflow = '';
   document.querySelector('#view-pdp .pdp-grid').removeAttribute('aria-hidden');
   if (!silent && lastFocus && lastFocus.focus) lastFocus.focus();
 }
-function dismiss(){ var was = S.tab; closeModal(); if (was === 'modc' || was === 'modd') go('pdp'); }
+function dismiss(){ var was = S.tab; closeModal(); if (was === 'modc') go('pdp'); }
 $('cX').addEventListener('click', dismiss);
-$('dX').addEventListener('click', dismiss);
-['backC','backD'].forEach(function(id){
-  $(id).addEventListener('mousedown', function(e){ if (e.target === this) dismiss(); });
-});
+$('backC').addEventListener('mousedown', function(e){ if (e.target === this) dismiss(); });
 function backToConfigurator(){
   closeModal(); go('pdp');
   var el = $('pdpSwatches');
@@ -1896,10 +1856,10 @@ function backToConfigurator(){
 }
 $('cChange').addEventListener('click', backToConfigurator);
 document.addEventListener('keydown', function(e){
-  if (!openKey) return;
+  if (!openC) return;
   if (e.key === 'Escape'){ dismiss(); return; }
   if (e.key === 'Tab'){
-    var f = backOf(openKey).querySelectorAll('button, input, select, a[href], [tabindex="-1"]');
+    var f = $('backC').querySelectorAll('button, input, select, a[href], [tabindex="-1"]');
     var list = []; for (var i=0;i<f.length;i++){ if (!f[i].disabled && f[i].offsetParent !== null) list.push(f[i]); }
     if (!list.length) return;
     var first = list[0], last = list[list.length - 1];
@@ -1909,14 +1869,14 @@ document.addEventListener('keydown', function(e){
 });
 
 /* ---- PDP-view chips ---- */
-$('chipDecSet').addEventListener('click', function(){ setDecorationChip(true); S.colors = 2; S.method = 'pad'; S.loc = 'barrel'; S.qty = 250; S.notices = []; renderAll(); });
-$('chipDecDefault').addEventListener('click', function(){ setDecorationChip(false); S.colors = 1; S.method = 'pad'; S.loc = 'barrel'; S.notices = []; renderAll(); });
+$('chipDecSet').addEventListener('click', function(){ setDecorationChip(true); S.colors = 2; S.method = 'pad'; S.loc = 'barrel'; S.qty = 250; S.dNotices = []; renderAll(); });
+$('chipDecDefault').addEventListener('click', function(){ setDecorationChip(false); S.colors = 1; S.method = 'pad'; S.loc = 'barrel'; S.dNotices = []; renderAll(); });
 function priceChip(which){
   ['chipPriceOk','chipPriceQty','chipPriceMethod'].forEach(function(id){ $(id).classList.toggle('on', id === which); });
   if (which === 'chipPriceOk'){ S.qty = 250; S.method = 'pad'; S.loc = 'barrel'; }
   if (which === 'chipPriceQty'){ S.qty = 25000; S.method = 'pad'; S.loc = 'barrel'; }
   if (which === 'chipPriceMethod'){ S.qty = 250; S.method = 'dyesub'; S.loc = 'barrel'; }
-  S.notices = []; S.submitted = false;
+  S.dNotices = []; S.submitted = false;
   $('chipSubNo').classList.add('on'); $('chipSubYes').classList.remove('on');
   renderAll();
 }
@@ -1927,64 +1887,54 @@ chipPair('chipSubNo','chipSubYes', function(showForm){
          $('chipSubYes').classList.add('on'); $('chipSubNo').classList.remove('on'); }
   renderAll();
 });
-
 /* ============================================================
-   V4 — QUOTE PAGE, its two modules, and the documents they update
+   V4 — THE ISSUED QUOTE
    ============================================================ */
 var QS = {
-  invalid: {cls:'', txt:'', cta:'', help:''},
-  valid:   {cls:'', txt:'This quote is good through Oct 3, 2026. The price is honored at checkout until then.',
-            cta:'Order this quote', help:'Restores this exact configuration at the quoted price'},
-  expiring:{cls:'expiring', txt:'This quote expires in 4 days, on Oct 3, 2026. Order before then to keep this price.',
-            cta:'Order this quote', help:'Restores this exact configuration at the quoted price'},
-  expired: {cls:'expired', txt:'This quote expired on Oct 3, 2026. Pricing may have changed — get an updated quote with the same configuration.',
-            cta:'Get an updated quote', help:'Same configuration, priced today, with a new quote number'},
-  ordered: {cls:'ordered', txt:'Ordered on Sep 10, 2026 as order W-10488.',
-            cta:'View order W-10488', help:''}
+  invalid: {chip:'', cta:'', help:''},
+  valid:   {chip:'Valid', cls:'', cta:'Order this quote', help:'Restores this exact configuration at the quoted price',
+            validity:'This quote is good through Oct 3, 2026. The price is honored at checkout until then.'},
+  expiring:{chip:'Expires in 4 days', cls:'expiring', cta:'Order this quote', help:'Restores this exact configuration at the quoted price',
+            validity:'This quote expires in 4 days, on Oct 3, 2026. Order before then to keep this price.'},
+  expired: {chip:'Expired', cls:'expired', cta:'Get an updated quote', help:'Same configuration, priced today, with a new quote number',
+            validity:'This quote expired on Oct 3, 2026. Pricing may have changed — get an updated quote with the same configuration.'},
+  ordered: {chip:'Ordered', cls:'ordered', cta:'View order W-10488', help:'',
+            validity:'Ordered on Sep 10, 2026 as order W-10488.'}
 };
 var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function shortDate(v){ var p = v.split('-'); return MONTHS[parseInt(p[1],10) - 1] + ' ' + parseInt(p[2],10); }
 
-function preparedHTML(){
-  var d = S.quote.det, h = '<dt>Name</dt><dd>Dana Whitfield</dd>';
-  if (d.added && d.company) h += '<dt>Company</dt><dd>' + esc(d.company) + '</dd>';
-  h += '<dt>Email</dt><dd>dana@acme.com</dd>';
-  if (d.added && d.phone) h += '<dt>Phone</dt><dd>' + esc(d.phone) + '</dd>';
-  if (d.added && d.needby) h += '<dt>Need-by date</dt><dd>' + shortDate(d.needby) + ', 2026</dd>';
-  return h;
+function preparedLine(){
+  var d = S.quote.det, out = 'Prepared for <b>Dana Whitfield</b>';
+  if (d.added && d.company) out += ', <b>' + esc(d.company) + '</b>';
+  out += ' · dana@acme.com';
+  if (d.added && d.phone) out += ' · ' + esc(d.phone);
+  return out + '<br>Issued Sep 3, 2026 · Valid through Oct 3, 2026';
 }
 function configRows(){
-  var c = S.quote.cfg;
-  var rows = [['Product color', c.color], ['Quantity', num(c.qty) + ' pieces'],
+  var c = S.quote.cfg, d = S.quote.det;
+  var rows = [['Quantity', num(c.qty) + ' pieces'], ['Product color', c.color],
               ['Decoration method', c.method], ['Imprint location', c.loc], ['Imprint Colors', c.colorsLabel]];
   if (c.pms) rows.push(['Pantone/PMS color match', 'Yes, applied at proofing']);
+  if (d.added && d.needby) rows.push(['Need-by date', shortDate(d.needby) + ', 2026']);
   return rows.map(function(r){ return '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('');
 }
-/* the quote table, the PDF and the email all use production's Price-breakdown labels */
-function itemRows(labelled){
+function trow(k, v, cls){
+  return '<div class="trow' + (cls ? ' ' + cls : '') + '"><span class="k">' + k + '</span><span class="v' +
+    (cls === 'soft' ? ' soft' : '') + '">' + v + '</span></div>';
+}
+/* the totals block. The shipping row is the one place the "calculated at
+   checkout" promise and the "calculate it now" offer have to agree, so it
+   carries both: a statement and a link to the control that changes it. */
+function totalsHTML(forPrint){
   var c = S.quote.cfg, r = qRate(), h = '';
-  function L(x){ return labelled ? ' data-l="' + x + '"' : ''; }
-  h += '<tr><td class="item">Base Item Price<span class="m">Del Mar Bamboo Stylus Pen &middot; ' + esc(c.color) + '</span></td>' +
-       '<td class="r"' + L('Qty') + '>' + num(c.qty) + ' pieces</td><td class="r"' + L('Unit price') + '>' + fmt(c.unit) + '</td>' +
-       '<td class="r"' + L('Amount') + '>' + fmt(c.goods) + '</td></tr>';
-  h += '<tr class="softrow"><td class="item" colspan="4">Decoration method: ' + esc(c.method) + '</td></tr>';
-  h += '<tr class="softrow"><td class="item" colspan="4">Imprint 1 &mdash; ' + esc(c.imprintLine) + '</td></tr>';
-  h += '<tr><td class="item">Imprint Method Setup</td><td class="r"' + L('Qty') + '>' + (c.setup > 0 ? '1' : '') + '</td>' +
-       '<td class="r"' + L('Unit price') + '>' + (c.setup > 0 ? fmt(c.setup) : '') + '</td>' +
-       '<td class="r"' + L('Amount') + '>' + (c.setup > 0 ? fmt(c.setup) : 'Free') + '</td></tr>';
-  h += '<tr><td class="item">Imprint Method Run Charge</td><td class="r"' + L('Qty') + '>' + (c.run > 0 ? num(c.qty) + ' pieces' : '') + '</td>' +
-       '<td class="r"' + L('Unit price') + '>' + (c.run > 0 ? fmt(c.runEach) : '') + '</td>' +
-       '<td class="r"' + L('Amount') + '>' + (c.run > 0 ? fmt(c.run) : 'Free') + '</td></tr>';
-  if (c.pms) h += '<tr class="softrow"><td class="item" colspan="3">Pantone/PMS color match</td>' +
-       '<td class="r"' + L('') + '>Applied at proofing</td></tr>';
-  h += '<tr class="sub"><td class="item" colspan="3">Subtotal with Setup Fee</td><td class="r"' + L('') + '>' + fmt(c.sub) + '</td></tr>';
+  h += trow('<b>Subtotal with Setup Fee:</b>', fmt(c.sub));
   h += r
-    ? '<tr class="softrow"><td class="item" colspan="3">Delivery<span class="m">' + r.name + ' &middot; Arrives by ' + r.arrives + '</span></td><td class="r"' + L('Delivery') + '>' + fmt(r.cost) + '</td></tr>'
-    : '<tr class="softrow"><td class="item" colspan="3">Shipping</td><td class="r"' + L('Shipping') + '>Calculated at checkout</td></tr>';
-  h += '<tr class="softrow"><td class="item" colspan="3">Sales tax</td><td class="r"' + L('') + '>Added at checkout where applicable</td></tr>';
-  /* the final figure names what it includes, so "Total" never over-promises */
-  h += '<tr class="tot"><td class="item" colspan="3">' + totalLabel() + '</td><td class="r"' + L('') + '>' + fmt(qTotal()) + '</td></tr>';
-  h += '<tr class="softrow"><td class="item" colspan="3">Average price per unit</td><td class="r"' + L('') + '>' + fmt(qTotal() / c.qty) + ' per unit</td></tr>';
+    ? trow('Delivery — ' + esc(r.name) + ', arrives ' + r.arrives, fmt(r.cost))
+    : trow('Shipping', 'Calculated at checkout' + (forPrint ? '' :
+        ' &mdash; <button class="linkbtn sm no-print" id="qCalcNow">Calculate now</button>'), 'soft');
+  h += trow('Sales tax', 'Added at checkout where applicable', 'soft');
+  h += '<div class="trow grand"><span class="k">' + totalLabel() + '</span><span class="v">' + fmt(qTotal()) + '</span></div>';
   return h;
 }
 function termsHTML(){
@@ -1998,107 +1948,113 @@ function termsHTML(){
 }
 function stampLines(){
   var out = [];
-  if (S.quote.del.stage === 'chosen') out.push('Delivery added Sep 4, 2026');
+  if (qRate()) out.push('Delivery added Sep 4, 2026');
   if (S.quote.det.added) out.push('Details added Sep 4, 2026');
   return out;
 }
 
 function renderQuote(){
-  var st = QS[S.quote.state], bad = (S.quote.state === 'invalid'), r = qRate();
-  $('qInvalid').style.display = bad ? 'block' : 'none';
-  ['qArrival','qBanner','qDoc'].forEach(function(id){ $(id).style.display = bad ? 'none' : ''; });
-  document.querySelector('#view-quote .desk-rail').style.display = bad ? 'none' : '';
-  document.querySelector('#view-quote .mobile-bar').style.display = bad ? 'none' : '';
+  var st = QS[S.quote.state], bad = (S.quote.state === 'invalid'), r = qRate(), c = S.quote.cfg;
+  show($('qInvalid'), bad);
+  show($('qLive'), !bad);
+  show($('qMobBar'), !bad);
   $('qHeadTitle').textContent = bad ? 'Quote' : 'Quote Q-48213';
   if (bad) return;
 
-  $('qBanner').className = 'q-banner ' + st.cls;
-  $('qBanner').textContent = st.txt;
+  $('qStatus').textContent = st.chip;
+  $('qStatus').className = 'q-status ' + st.cls;
+  $('qSub').innerHTML = preparedLine();
   $('qCta').textContent = st.cta; $('qMobCta').textContent = st.cta;
-  $('qCtaHelp').textContent = st.help; $('qCtaHelp').style.display = st.help ? 'block' : 'none';
-  $('qCountdown').style.display = (S.quote.state === 'expiring') ? 'block' : 'none';
-  $('qCountdown').textContent = 'Expires in 4 days, on Oct 3, 2026';
-  $('qDoc').classList.toggle('dim', S.quote.state === 'expired');
-  $('qAsOf').style.display = (S.quote.state === 'expired') ? 'block' : 'none';
-  $('qChanges').style.display = (S.quote.state === 'ordered') ? 'none' : 'block';
-  $('qArrival').style.display = (S.quote.arrival && S.quote.state === 'valid') ? 'block' : 'none';
+  $('qCtaHelp').textContent = st.help; show($('qCtaHelp'), !!st.help);
+  $('qValidity').textContent = st.validity;
+  show($('qArrival'), S.quote.arrival && S.quote.state === 'valid');
+  show(document.querySelector('.q-changes'), S.quote.state !== 'ordered');
 
   var lines = stampLines();
-  $('qRevStamp').style.display = lines.length ? 'block' : 'none';
+  show($('qRevStamp'), lines.length > 0);
   $('qRevStamp').innerHTML = lines.length
     ? '<b>Revised Sep 4, 2026</b> &middot; ' + lines.join(' &middot; ') + '. The quote number and the quoted goods price are unchanged.'
     : '';
 
-  $('qPrepared').innerHTML = preparedHTML();
+  /* collapsed product row */
+  $('qThumb').innerHTML = penSVG(28);
+  $('qProwCfg').textContent = configLine(c);
+  $('qProwSub').textContent = fmt(c.sub);
+  $('qProwBtn').setAttribute('aria-expanded', S.quote.prodOpen ? 'true' : 'false');
+  show($('qProwBody'), S.quote.prodOpen);
   $('qConfig').innerHTML = configRows();
-  $('qDefaultNote').style.display = S.quote.cfg.defaulted ? 'block' : 'none';
-  $('qItems').innerHTML = itemRows(true);
-  $('qTerms').innerHTML = termsHTML();
-  $('qRailTotalV').textContent = fmt(qTotal());
-  $('qMobTotal').textContent = fmt(qTotal());
-  document.querySelector('#view-quote .rail-total .k').textContent = totalLabel();
-  document.querySelector('#view-quote .mobile-bar .tot').childNodes[0].nodeValue = totalLabel() + ' ';
+  show($('qDefaultNote'), !!c.defaulted);
+  $('qBreakdown').innerHTML = breakdownFrom(c);
+  $('chipProdCol').classList.toggle('on', !S.quote.prodOpen);
+  $('chipProdExp').classList.toggle('on', S.quote.prodOpen);
+
+  $('qTotals').innerHTML = totalsHTML(false);
+  if ($('qCalcNow')) $('qCalcNow').addEventListener('click', calcNow);
   $('qTrust').textContent = r
-    ? 'This is the complete price. Only sales tax is added at checkout.'
-    : 'This is the complete price. Only shipping and sales tax are added at checkout.';
-  $('qProduction').textContent = r
-    ? 'Includes 5 business days production after you approve your proof. Arrival dates assume artwork approved by Fri, Sep 5, 2026.'
-    : 'Includes 5 business days production after you approve your proof.';
+    ? 'This is the complete price. Only sales tax is added at checkout. Includes 5 business days production after you approve your proof, and the arrival date assumes artwork approved by Fri, Sep 5, 2026.'
+    : 'This is the complete price. Only shipping and sales tax are added at checkout. Includes 5 business days production after you approve your proof.';
+  $('qMobTotal').textContent = fmt(qTotal());
+  $('qMobK').textContent = totalLabel();
 
   if (S.quote.rep === 'named'){
     $('qSpecHd').textContent = 'Your specialist';
     $('qSpecWho').textContent = 'Terry Alvarez';
-    $('qSpecBody').innerHTML = '312-555-0148 <span class="dot">&middot;</span> terry@promotionpros.com';
+    $('qSpecBody').innerHTML = '312-555-0148 &middot; terry@promotionpros.com';
+    show($('qSpecWho'), true);
   } else {
     $('qSpecHd').textContent = 'Talk to a specialist';
-    $('qSpecWho').textContent = '';
+    show($('qSpecWho'), false);
     $('qSpecBody').textContent = 'Call 800-555-0100, Monday to Friday, 8 am to 5 pm Central.';
   }
-  $('qSpecHd').classList.toggle('big', S.quote.rep !== 'named');
-  $('qSpecWho').style.display = (S.quote.rep === 'named') ? 'block' : 'none';
-
-  renderDelModule();
-  renderDetModule();
+  $('qTerms').innerHTML = termsHTML();
+  renderDelivery();
+  renderDetails();
 }
+$('qProwBtn').addEventListener('click', function(){ S.quote.prodOpen = !S.quote.prodOpen; renderQuote(); });
+chipPair('chipProdCol','chipProdExp', function(collapsed){ S.quote.prodOpen = !collapsed; renderQuote(); });
 
-/* ---- module 1: Calculate delivery ---- */
-function renderDelModule(){
+/* ---- delivery, behind a checkbox ---- */
+function calcNow(){
+  var box = $('qDelOn');
+  if (!box.checked){ box.checked = true; S.quote.del.on = true; S.quote.del.stage = 'address'; syncQuoteChips(); renderQuote(); }
+  $('qDelBlock').scrollIntoView({block:'center', behavior:'smooth'});
+  setTimeout(function(){ box.focus(); }, 220);
+}
+function renderDelivery(){
   var d = S.quote.del, st = d.stage, r = qRate();
-  $('qmDelTrigger').style.display = (st === 'none') ? 'block' : 'none';
-  $('qmDelForm').style.display = (st === 'none' || st === 'chosen') ? 'none' : 'block';
-  $('qmDelResult').style.display = (st === 'chosen') ? 'block' : 'none';
-  $('qmDelBtn').setAttribute('aria-expanded', st === 'none' ? 'false' : 'true');
-  $('qD2').style.display = (st === 'address' || st === 'loading') ? 'block' : 'none';
-  $('qD3').style.display = (st === 'options' || st === 'empty') ? 'block' : 'none';
+  $('qDelOn').checked = d.on;
+  $('qDelOn').setAttribute('aria-expanded', d.on ? 'true' : 'false');
+  show($('qDelForm'), d.on && st !== 'chosen');
+  show($('qDelResult'), !!r);
+  show($('qD2'), st === 'address' || st === 'loading');
+  show($('qD3'), st === 'options' || st === 'empty');
 
-  if (st === 'chosen' && r){
-    $('qmDelConfirm').innerHTML = 'Delivery added. This quote and the PDF now include ' + r.name + ', ' + fmt(r.cost) + ', arriving ' + r.arrives + '.';
-  }
+  if (r) $('qDelConfirm').innerHTML = 'Delivery added. This quote and the PDF now include ' + r.name + ', ' +
+    fmt(r.cost) + ', arriving ' + r.arrives + '. <button class="linkbtn sm" id="qDelEdit">Change delivery</button>';
+  if ($('qDelEdit')) $('qDelEdit').addEventListener('click', function(){
+    S.quote.del.stage = 'options'; syncQuoteChips(); renderQuoteAll();
+  });
+
   if (st === 'options' || st === 'empty'){
     $('qAddrEcho').textContent = 'Dana Whitfield, ' + ($('qStreet').value || '2550 N Clark St') + ', ' +
       ($('qCity').value || 'Chicago') + ', ' + ($('qState').value || 'IL') + ' ' + (d.zip || '60614');
   }
   if (st === 'empty'){
-    /* DEL-14 — the state actually captured on production, restyled into the PDP system */
     $('qRates').innerHTML =
       '<div class="band band-err"><b>No rates came back for ' + esc(d.zip || '60614') +
       '. Check the address, or leave delivery off and we\'ll price shipping at checkout.</b>' +
-      '<button class="btn-ghost" style="margin-top:12px">' +
-      '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 3.5h12v8H8.8L5.5 14v-2.5H2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
-      'Chat with us</button></div>';
+      '<button class="btn-mini" style="margin-top:12px">Chat with us</button></div>';
   } else if (st === 'options'){
     $('qRates').innerHTML =
       '<fieldset style="border:0;padding:0;margin:0">' +
-      '<legend style="font-size:15px;font-weight:700;color:var(--ink);padding:0 0 4px">Delivery options</legend>' +
-      '<p class="note" style="margin:0 0 12px">Includes 5 business days production after you approve your proof</p>' +
-      RATES.map(function(x){
-        return '<label class="ship-opt' + (d.chosen === x.id ? ' sel' : '') + '">' +
-          '<input type="radio" name="qrate" value="' + x.id + '"' + (d.chosen === x.id ? ' checked' : '') + '>' +
+      '<legend class="lbl" style="padding:0 0 2px">Delivery options</legend>' +
+      '<p class="note" style="margin:0 0 10px">Includes 5 business days production after you approve your proof</p>' +
+      '<div class="opts">' + RATES.map(function(x){
+        return '<label class="opt"><input type="radio" name="qrate" value="' + x.id + '"' + (d.chosen === x.id ? ' checked' : '') + '>' +
           '<span><span class="t">' + x.name + ' — ' + fmt(x.cost) + '</span>' +
           '<span class="m">Arrives by ' + x.arrives + '</span></span></label>';
-      }).join('') +
-      '<p class="note" style="margin-top:2px">Arrival dates assume artwork approved by Fri, Sep 5, 2026</p>' +
-      '</fieldset>';
+      }).join('') + '</div>' +
+      '<p class="note">Arrival dates assume artwork approved by Fri, Sep 5, 2026</p></fieldset>';
     var rs = $('qRates').querySelectorAll('input[type=radio]');
     for (var n=0;n<rs.length;n++) rs[n].addEventListener('change', function(){
       S.quote.del.chosen = this.value; S.quote.del.stage = 'chosen';
@@ -2107,7 +2063,13 @@ function renderDelModule(){
     });
   }
 }
-$('qmDelBtn').addEventListener('click', function(){ S.quote.del.stage = 'address'; syncQuoteChips(); renderQuote(); $('qAuto').focus(); });
+$('qDelOn').addEventListener('change', function(){
+  S.quote.del.on = this.checked;
+  if (this.checked){ if (S.quote.del.stage === 'chosen') S.quote.del.stage = 'options'; }
+  else { S.quote.del.stage = 'address'; announce('Delivery removed. Total ' + fmt(S.quote.cfg.sub)); }
+  syncQuoteChips(); renderQuoteAll();
+  if (S.quote.del.on) setTimeout(function(){ if ($('qAuto').offsetParent) $('qAuto').focus(); }, 30);
+});
 $('qAuto').addEventListener('input', function(){ $('qSugg').classList.toggle('open', this.value.trim().length > 2); });
 $('qAuto').addEventListener('blur', function(){ setTimeout(function(){ $('qSugg').classList.remove('open'); }, 150); });
 (function(){
@@ -2116,12 +2078,12 @@ $('qAuto').addEventListener('blur', function(){ setTimeout(function(){ $('qSugg'
     var parts = this.textContent.split(',');
     $('qStreet').value = parts[0].trim(); $('qCity').value = 'Chicago'; $('qState').value = 'IL';
     $('qZip').value = parts[2].trim().split(' ')[1]; S.quote.del.zip = $('qZip').value;
-    $('qAuto').value = this.textContent; $('qGrid').style.display = 'block';
+    $('qAuto').value = this.textContent; show($('qGrid'), true);
     $('qSugg').classList.remove('open'); checkAddr();
   });
 })();
-$('qManual').addEventListener('click', function(){ $('qGrid').style.display = 'block'; $('qStreet').focus(); checkAddr(); });
-$('qApt').addEventListener('click', function(){ $('qFApt').style.display = 'block'; this.style.display = 'none'; $('qApt2').focus(); });
+$('qManual').addEventListener('click', function(){ show($('qGrid'), true); $('qStreet').focus(); checkAddr(); });
+$('qApt').addEventListener('click', function(){ show($('qFApt'), true); this.style.display = 'none'; $('qApt2').focus(); });
 ['qStreet','qCity','qState'].forEach(function(f){ $(f).addEventListener('input', checkAddr); });
 $('qZip').addEventListener('input', function(){
   var v = this.value.replace(/\D/g,'').slice(0,5); this.value = v; S.quote.del.zip = v;
@@ -2147,47 +2109,45 @@ $('qShowOpts').addEventListener('click', function(){
   }, 650);
 });
 $('qChangeAddr').addEventListener('click', function(){ S.quote.del.stage = 'address'; syncQuoteChips(); renderQuote(); });
-$('qmDelEdit').addEventListener('click', function(){ S.quote.del.stage = 'options'; syncQuoteChips(); renderQuoteAll(); });
-$('qmDelResend').addEventListener('click', function(){
+$('qDelResend').addEventListener('click', function(){
   S.quote.mail = 'updated'; renderMail();
   var t = $('toast'); t.textContent = 'Updated PDF emailed to dana@acme.com'; t.classList.add('on');
   setTimeout(function(){ t.classList.remove('on'); t.textContent = 'Link copied'; }, 3000);
 });
 
-/* ---- module 2: Add details ---- */
-function renderDetModule(){
-  var d = S.quote.det, open = $('qmDetForm').dataset.open === '1';
-  $('qmDetTrigger').style.display = (d.added || open) ? 'none' : 'block';
-  $('qmDetForm').style.display = (!d.added && open) ? 'block' : 'none';
-  $('qmDetResult').style.display = d.added ? 'block' : 'none';
-  var r = qRate(), conflict = '';
+/* ---- add details, behind a link ---- */
+function renderDetails(){
+  var d = S.quote.det, r = qRate();
+  show($('qDetForm'), d.open && !d.added);
+  show($('qDetResult'), d.added);
+  show($('qDetBtn').parentNode, !d.added && !d.open);
+  show($('qDetHelp'), !d.added && !d.open);
+  $('qDetBtn').setAttribute('aria-expanded', d.open ? 'true' : 'false');
+  var conflict = '';
   if (d.added && d.needby && r && d.needby < '2026-09-24'){
     conflict = 'Your ' + shortDate(d.needby) + ' date is earlier than the Sep 24 arrival above. A specialist can check rush options.';
   }
-  $('qmDetConflict').style.display = conflict ? 'flex' : 'none';
-  $('qmDetConflict').textContent = conflict;
+  show($('qDetConflict'), !!conflict);
+  $('qDetConflict').textContent = conflict;
 }
-$('qmDetBtn').addEventListener('click', function(){
-  $('qmDetForm').dataset.open = '1'; this.setAttribute('aria-expanded','true');
-  renderDetModule(); $('qCompany').focus();
-});
-$('qmDetSave').addEventListener('click', function(){
+$('qDetBtn').addEventListener('click', function(){ S.quote.det.open = true; renderDetails(); $('qCompany').focus(); });
+$('qDetSave').addEventListener('click', function(){
   var ph = $('qPhone').value.trim(), nb = $('qNeedby').value;
   var phBad = ph !== '' && ph.replace(/\D/g,'').length !== 10;
   var nbBad = nb !== '' && nb < '2026-09-03';
   $('qFPhone').classList.toggle('err', phBad);
   $('qFDate').classList.toggle('err', nbBad);
   if (phBad || nbBad) return;
-  S.quote.det = {added:true, company:$('qCompany').value.trim(), phone:ph, needby:nb};
-  $('qmDetForm').dataset.open = '0';
+  S.quote.det = {open:false, added:true, company:$('qCompany').value.trim(), phone:ph, needby:nb};
   syncQuoteChips(); renderQuoteAll();
   announce('Details saved. The PDF has been updated.');
 });
 
 /* ---- chips ---- */
 function syncQuoteChips(){
+  var d = S.quote.del, key = !d.on ? 'none' : (d.stage === 'loading' ? 'address' : d.stage);
   var dl = document.querySelectorAll('[data-dl]');
-  for (var i=0;i<dl.length;i++) dl[i].classList.toggle('on', dl[i].dataset.dl === (S.quote.del.stage === 'address' ? 'none' : S.quote.del.stage));
+  for (var i=0;i<dl.length;i++) dl[i].classList.toggle('on', dl[i].dataset.dl === key);
   var dt = document.querySelectorAll('[data-dt]');
   for (var j=0;j<dt.length;j++) dt[j].classList.toggle('on', dt[j].dataset.dt === (S.quote.det.added ? 'saved' : 'none'));
   var qs = document.querySelectorAll('[data-qs]');
@@ -2200,26 +2160,36 @@ function syncQuoteChips(){
   for (var j=0;j<d.length;j++) d[j].addEventListener('click', function(){
     var v = this.dataset.dl;
     S.ratesAvailable = (v !== 'empty');
-    S.quote.del.stage = v; if (v === 'chosen') S.quote.del.chosen = 'ground';
-    if (v !== 'none' && !$('qStreet').value){ $('qStreet').value = '2550 N Clark St'; $('qCity').value = 'Chicago'; $('qState').value = 'IL'; $('qZip').value = '60614'; S.quote.del.zip = '60614'; $('qGrid').style.display = 'block'; checkAddr(); }
+    S.quote.del.on = (v !== 'none');
+    S.quote.del.stage = (v === 'none') ? 'address' : v;
+    if (v === 'chosen') S.quote.del.chosen = 'ground';
+    if (v !== 'none' && !$('qStreet').value){
+      $('qStreet').value = '2550 N Clark St'; $('qCity').value = 'Chicago'; $('qState').value = 'IL';
+      $('qZip').value = '60614'; S.quote.del.zip = '60614'; show($('qGrid'), true); checkAddr();
+    }
     syncQuoteChips(); renderQuoteAll();
   });
   var e = document.querySelectorAll('[data-dt]');
   for (var k=0;k<e.length;k++) e[k].addEventListener('click', function(){
     if (this.dataset.dt === 'saved'){
       $('qCompany').value = 'Acme Logistics'; $('qPhone').value = '312-555-0148'; $('qNeedby').value = '2026-09-15';
-      S.quote.det = {added:true, company:'Acme Logistics', phone:'312-555-0148', needby:'2026-09-15'};
-    } else { S.quote.det = {added:false, company:'', phone:'', needby:''}; $('qmDetForm').dataset.open = '0'; }
+      S.quote.det = {open:false, added:true, company:'Acme Logistics', phone:'312-555-0148', needby:'2026-09-15'};
+    } else { S.quote.det = {open:false, added:false, company:'', phone:'', needby:''}; }
     syncQuoteChips(); renderQuoteAll();
   });
 })();
 chipPair('chipArrOn','chipArrOff', function(on){ S.quote.arrival = on; renderQuote(); });
 chipPair('chipRepNamed','chipRepGeneric', function(named){ S.quote.rep = named ? 'named' : 'generic'; renderQuote(); });
-$('qCopy').addEventListener('click', function(){
-  var t = $('toast'); t.classList.add('on'); setTimeout(function(){ t.classList.remove('on'); }, 3000);
-});
+function copyLink(){
+  var t = $('toast'); t.textContent = 'Link copied'; t.classList.add('on');
+  setTimeout(function(){ t.classList.remove('on'); }, 3000);
+}
+$('qCopy').addEventListener('click', copyLink);
+$('qMobShare').addEventListener('click', copyLink);
 $('qPdf').addEventListener('click', function(){ go('pdf'); });
+$('qMobPdf').addEventListener('click', function(){ go('pdf'); });
 $('qPrint').addEventListener('click', function(){ window.print(); });
+$('qMobPrint').addEventListener('click', function(){ window.print(); });
 $('qCta').addEventListener('click', function(){ if (S.quote.state === 'expired') go('pdp'); else alert('Cart restored at the quoted price, then checkout.'); });
 $('qMobCta').addEventListener('click', function(){ $('qCta').click(); });
 
@@ -2227,12 +2197,17 @@ $('qMobCta').addEventListener('click', function(){ $('qCta').click(); });
    V5 / V6 — the documents, rendered from the same snapshot
    ============================================================ */
 function renderPdf(){
-  var lines = stampLines();
-  $('pdfStamp').style.display = lines.length ? 'block' : 'none';
-  $('pdfStamp').textContent = lines.join(' · ');
-  $('pdfPrepared').innerHTML = preparedHTML();
+  var c = S.quote.cfg, lines = stampLines(), d = S.quote.det;
+  show($('pdfStamp'), lines.length > 0);
+  $('pdfStamp').textContent = lines.length ? 'Revised Sep 4, 2026 · ' + lines.join(' · ') : '';
+  var prep = '<dt>Name</dt><dd>Dana Whitfield</dd>';
+  if (d.added && d.company) prep += '<dt>Company</dt><dd>' + esc(d.company) + '</dd>';
+  prep += '<dt>Email</dt><dd>dana@acme.com</dd>';
+  if (d.added && d.phone) prep += '<dt>Phone</dt><dd>' + esc(d.phone) + '</dd>';
+  $('pdfPrepared').innerHTML = prep;
   $('pdfConfig').innerHTML = '<dt>Product</dt><dd>Del Mar Bamboo Stylus Pen (PP-DELMAR-BMB)</dd>' + configRows();
-  $('pdfItems').innerHTML = itemRows(false);
+  $('pdfBreakdown').innerHTML = breakdownFrom(c);
+  $('pdfTotals').innerHTML = totalsHTML(true);
   $('pdfTerms').innerHTML = termsHTML();
   $('pdfGen').textContent = 'Generated ' + (lines.length ? 'Sep 4' : 'Sep 3') + ', 2026. The link above always shows the current version.';
 }
@@ -2251,17 +2226,16 @@ function renderMail(){
     ? 'Here\'s the updated quote for ' + num(c.qty) + ' Del Mar Bamboo Stylus Pens, with the delivery you added.'
     : 'Here\'s your quote for ' + num(c.qty) + ' Del Mar Bamboo Stylus Pens, with ' + c.prose + ' on the ' + c.loc.toLowerCase() + ' in ' + c.colorsLabel.toLowerCase() + '.';
   var rows = [['Quote', 'Q-48213'],
+              ['Configuration', configLine(c)],
               ['Base Item Price', num(c.qty) + ' × ' + fmt(c.unit) + ' = ' + fmt(c.goods)],
-              ['Decoration method', c.method],
-              ['Imprint 1', c.imprintLine],
               ['Imprint Method Setup', c.setup > 0 ? fmt(c.setup) : 'Free'],
               ['Imprint Method Run Charge', c.run > 0 ? num(c.qty) + ' × ' + fmt(c.runEach) + ' = ' + fmt(c.run) : 'Free']];
   if (c.pms) rows.push(['Pantone/PMS color match', 'Applied at proofing']);
   rows.push(['Subtotal with Setup Fee', fmt(c.sub)]);
-  rows.push(['Delivery', r ? r.name + ' · Arrives by ' + r.arrives : 'Calculated at checkout']);
+  rows.push(['Delivery', r ? r.name + ' · Arrives by ' + r.arrives + ' · ' + fmt(r.cost) : 'Calculated at checkout']);
+  rows.push(['Sales tax', 'Added at checkout where applicable']);
   var h = rows.map(function(x){ return '<div class="r"><span class="k">' + x[0] + '</span><span class="v">' + esc(x[1]) + '</span></div>'; }).join('');
   h += '<div class="r tot"><span class="k">' + totalLabel() + '</span><span class="v">' + fmt(qTotal()) + '</span></div>';
-  h += '<div class="r"><span class="k">Average price per unit</span><span class="v">' + fmt(qTotal() / c.qty) + ' per unit</span></div>';
   h += '<div class="r"><span class="k">Valid through</span><span class="v">Oct 3, 2026</span></div>';
   $('mailSum').innerHTML = h;
 }
@@ -2274,7 +2248,7 @@ function renderQuoteAll(){ renderQuote(); renderPdf(); renderMail(); }
    BOOT
    ============================================================ */
 $('qNeedby').min = '2026-09-03';
-$('qmDetForm').dataset.open = '0';
+placeFoot();
 S.quote.cfg = snapshot();
 renderAll();
 renderQuoteAll();
