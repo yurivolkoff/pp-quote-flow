@@ -255,7 +255,7 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
 .c-total{border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:14px 0;margin-bottom:6px}
 .c-total .amt{font-size:28px;font-weight:700;color:var(--ink);line-height:1.1}
 .c-total .k{font-size:13px;font-weight:700;color:var(--ink);display:block;margin-bottom:2px}
-.c-total .ea{font-size:14px;color:var(--body)}
+.c-total .ea{font-size:14px;color:var(--body);margin-left:10px}
 .disclose{margin:10px 0 0}
 .disclose-body{display:none;margin-top:12px;border:1px solid var(--rule);border-radius:6px;padding:12px 14px;background:#FCFCFC}
 .disclose-body.open{display:block}
@@ -281,7 +281,30 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
 /* --- production configurator controls, captured 2026-09-03 (screenshots
        2026-09-03-configurator-method / -location / -quantity). Numeral step
        badges and the step checkmark are dropped: D is not the four-step wizard. --- */
-.step-bar{background:var(--step-bar);color:#fff;font-size:16px;font-weight:700;padding:9px 14px;border-radius:3px;margin:0 0 12px}
+.step-bar{background:var(--step-bar);color:#fff;font-size:16px;font-weight:700;padding:9px 14px;border-radius:3px;
+  margin:0 0 12px;display:flex;align-items:center;gap:10px}
+.step-bar .n{font-size:16px;font-weight:700;opacity:.75}
+/* production "Price breakdown" dialog rows, captured 2026-09-03 */
+.bd-row{display:grid;grid-template-columns:1fr auto auto auto;gap:0 14px;align-items:baseline;
+  padding:9px 0;border-bottom:1px solid var(--rule);font-size:14px}
+.bd-row .lab{color:var(--ink)}
+.bd-row .q,.bd-row .u{color:var(--body);font-size:13.5px;text-align:right;white-space:nowrap}
+.bd-row .amt{color:var(--ink);font-weight:700;text-align:right;white-space:nowrap}
+.bd-row.lo{border-bottom:0;padding:5px 0}
+.bd-row.lo .lab{color:var(--body)}
+.bd-row.lo .lab b{color:var(--ink)}
+.bd-tot{display:flex;justify-content:space-between;gap:14px;align-items:baseline;padding:14px 0 0;
+  border-top:1px solid var(--rule-strong);margin-top:8px}
+.bd-tot .k,.bd-tot .v{font-size:16px;font-weight:700;color:var(--ink)}
+.bd-avg{display:flex;justify-content:space-between;gap:14px;font-size:13px;color:var(--body);margin-top:4px}
+.bd-foot{font-size:13px;color:var(--body);line-height:1.5;margin-top:12px}
+.free{color:var(--green-ink);font-weight:700}
+.incl-note{display:flex;gap:8px;align-items:flex-start;background:var(--green-bg);border:1px solid var(--green-rule);
+  color:var(--green-ink);border-radius:4px;padding:10px 12px;font-size:13.5px;line-height:1.45;margin-top:12px}
+.pms-row{display:flex;gap:8px;align-items:flex-start;font-size:14px;color:var(--ink);margin-bottom:12px}
+.cbx{display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin-top:12px}
+.cbx input{margin:0;width:20px;height:20px;flex:none;accent-color:var(--orange);margin-top:1px}
+.cbx span{font-size:14px;color:var(--ink)}
 .d-sec{margin-bottom:22px}
 .inline-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
 .inline-field{border:1px solid var(--input-border);border-radius:4px;height:50px;display:flex;align-items:center;
@@ -489,6 +512,8 @@ table.items tr.softrow td{color:var(--body)}
   /* full-screen sheet: header and footer are flex children, never position:fixed */
   /* the full-screen sheet owns the viewport, so the prototype chip rail drops back behind it */
   body.modal-open #view-pdp .chipdeck{position:static;z-index:auto;box-shadow:none}
+  /* the production label is long, so the pinned footer stacks rather than wrapping mid-phrase */
+  .modal-ft .row{flex-direction:column;align-items:flex-start;gap:2px}
   .modal-back{padding:0;align-items:stretch;top:var(--chromebar,0px)}
   .modal,.modal.lean{width:100%;max-width:100%;max-height:none;
     height:calc(100dvh - var(--chromebar,0px));border:0;border-radius:0}
@@ -625,7 +650,7 @@ table.items tr.softrow td{color:var(--body)}
           <li><b>Moso bamboo barrel</b> &mdash; a warm, low-plastic body that photographs well in gift sets</li>
           <li><b>Capacitive stylus tip</b> &mdash; works on phones and tablets without swapping pens</li>
           <li><b>Black medium-point refill</b> &mdash; standard cartridge, replaceable after the giveaway</li>
-          <li><b>Pad printed on the barrel</b> &mdash; a crisp mark on a curved natural surface</li>
+          <li><b>Pad printed on the back</b> &mdash; a crisp mark on a curved natural surface</li>
         </ul>
       </div>
     </div>
@@ -638,7 +663,7 @@ table.items tr.softrow td{color:var(--body)}
       <p class="pdp-desc">Moso bamboo barrel with a capacitive stylus tip and a black medium-point refill. Your logo is pad printed directly on the barrel.</p>
 
       <div class="recap">
-        <span><span class="num">1&ndash;2</span> <b id="pdpRecap">Natural bamboo &middot; 250 pieces</b></span>
+        <span id="pdpRecap">Color: <b>Natural bamboo</b> &nbsp;&nbsp; Quantity: <b>250</b></span>
         <button class="linkbtn">Edit Color &amp; Quantity</button>
       </div>
 
@@ -659,15 +684,16 @@ table.items tr.softrow td{color:var(--body)}
 
       <div class="pdp-sec">
         <div class="step-h"><span class="num">3</span> Decoration Method</div>
-        <p style="font-size:14.5px">Decoration method: <b style="color:var(--ink)" id="pdpMethod">Pad print</b> &middot; <span id="pdpLoc">Barrel</span> &middot; <span id="pdpColors">2 imprint colors</span></p>
+        <p style="font-size:14.5px">Decoration method: <b style="color:var(--ink)" id="pdpMethod">Pad Printed</b> &middot; <span id="pdpLoc">Back</span> &middot; <span id="pdpColors">2 Colors</span></p>
         <p class="note" id="pdpDecNote">One-time setup charge: $60.00 per location. Second imprint color adds $0.35 per piece.</p>
+        <div id="pdpPmsHost"></div>
       </div>
 
       <div class="subtotal-box">
         <div>
-          <div style="color:var(--ink);font-weight:700">Subtotal:</div>
+          <div style="color:var(--ink);font-weight:700">Subtotal with Setup Fee:</div>
           <div class="sub" id="pdpSubMeta">250 pieces</div>
-          <button class="linkbtn" style="margin-top:4px">See price breakdown</button>
+          <button class="linkbtn" style="margin-top:4px">View Price Breakdown</button>
         </div>
         <div style="text-align:right">
           <div class="amt" id="pdpSubtotal">$692.50</div>
@@ -707,7 +733,7 @@ table.items tr.softrow td{color:var(--body)}
   <span class="hd">View 2 — Option C, the lean modal.</span>
   <li><b>C1</b> — One configuration line in words, not a table of rows. The buyer reads the spec as a sentence and checks it in one pass.</li>
   <li><b>C2</b> — Zero editable controls. "Change" closes the modal and puts a focus ring on the PDP configurator, which is where the controls already are (SH-11, SH-12).</li>
-  <li><b>C3</b> — The total carries the unit price beside it, and "See price breakdown" holds the itemisation. The number is never behind a hover.</li>
+  <li><b>C3</b> — The figure carries production's own labels: "Subtotal with Setup Fee:" with "Price each:" beside it, and "View Price Breakdown" opening production's own line items. The number is never behind a hover.</li>
   <li><b>C4</b> — Switch the Decoration chip to "Never set": an amber notice spells out the defaulted decoration before the total, because a silently defaulted decoration is the way a quote is most likely to be wrong.</li>
   <li><b>C5</b> — Two required fields. Blur an empty name or a malformed email to see on-blur validation; the CTA names what is missing until both validate.</li>
   <li><b>C6</b> — Company, phone and need-by are not here. They are two optional modules on the quote page, after the number exists.</li>
@@ -739,12 +765,12 @@ table.items tr.softrow td{color:var(--body)}
 
         <div id="cPrice">
           <div class="c-total">
-            <span class="k">Total</span>
+            <span class="k">Subtotal with Setup Fee:</span>
             <span class="amt" id="cTotal">$692.50</span>
-            <span class="ea" id="cEach">$2.18 each</span>
+            <span class="ea">Price each: <b id="cEach" style="color:var(--ink)">$2.18</b></span>
           </div>
           <p class="disclose">
-            <button class="linkbtn" id="cDisc" aria-expanded="false" aria-controls="cDiscBody">See price breakdown</button>
+            <button class="linkbtn" id="cDisc" aria-expanded="false" aria-controls="cDiscBody">View Price Breakdown</button>
           </p>
           <div class="disclose-body" id="cDiscBody"></div>
         </div>
@@ -778,11 +804,11 @@ table.items tr.softrow td{color:var(--body)}
   <span class="hd">View 3 — Option D, the editable modal.</span>
   <li><b>D1</b> — Quantity, decoration method and imprint location are editable, using production's own controls: the price-tier table, the stacked method options, and the native location select. Everything re-prices live.</li>
   <li><b>D2</b> — Color and imprint colors stay read-only, because both are PDP swatch decisions. The helper says where they change.</li>
-  <li><b>D3</b> — Pick <b>Laser engraving</b>: it does not offer the Cap location and prints in one color, so the location falls back and the imprint-color count is clamped. Both are announced in an info band above the footer, never silently.</li>
+  <li><b>D3</b> — Change the location to Front (large), then pick <b>Laser Engraved</b>. Production discards the chosen location on every method change, and laser prints in one color, so both the location and the imprint-color count change. Both are announced in an info band above the footer, never silently.</li>
   <li><b>D4</b> — Type a quantity under 100, or over 10,000: the first is a validation error, the second cross-fades the modal into the specialist state mid-edit while keeping every typed value.</li>
-  <li><b>D5</b> — The production "Subtotal with Setup Fee:" box carries base, setup and run charges. The 2026-09-03 capture proves that is the same figure the flow calls Total, so both read $692.50 and the modal never shows two competing money numbers.</li>
+  <li><b>D5</b> — The pinned footer is production's own collapsed block: "Subtotal with Setup Fee:", "Price each:", "View Price Breakdown". The capture shows that figure carries base, setup and run, so there is one money number in the modal, not two.</li>
   <li><b>D6</b> — Method and location controls are built from the 2026-09-03 capture. They are reconstructions: production's method cards are hand-authored BEM components and its location control is a react-select combobox, neither of which a static prototype imports. That is a build constraint for Boris, not a design choice.</li>
-  <li><b>D7</b> — Production silently resets the location to its default whenever the method changes, even when the new method offers the old location. D keeps the location where it can and names the change where it cannot. That is a deliberate divergence, logged for Boris.</li>
+  <li><b>D7</b> — Pantone/PMS matching is set on the product page, never here. When it is set, D reports it read-only and it flows to the quote, the PDF and the email. The capture could not confirm it changes the price at configurator time, so it is priced at proofing.</li>
 </div>
 
 <div class="modal-back" id="backD">
@@ -806,13 +832,16 @@ table.items tr.softrow td{color:var(--body)}
           </div>
         </div>
 
-        <!-- read-only rows: production label case kept verbatim -->
-        <div id="dRo"></div>
-        <p class="note">Color and imprint colors are changed on the product page</p>
+        <!-- COLORS — read-only. Production label case verbatim. -->
+        <div class="d-sec" style="margin-top:20px">
+          <h3 class="step-bar"><span class="n">1</span> Colors</h3>
+          <div id="dRo"></div>
+          <p class="note">Color and imprint colors are changed on the product page</p>
+        </div>
 
         <!-- QUANTITY — production tier table + inline Quantity / Unit Price fields -->
-        <div class="d-sec" style="margin-top:20px">
-          <h3 class="step-bar">Quantity</h3>
+        <div class="d-sec">
+          <h3 class="step-bar"><span class="n">2</span> Quantity</h3>
           <div class="tier-wrap"><table class="tier" id="dTier" aria-label="Price per unit by quantity. Choose a quantity by activating a column."></table></div>
           <div class="inline-pair">
             <div class="field" style="margin:0" id="dQtyField">
@@ -832,9 +861,10 @@ table.items tr.softrow td{color:var(--body)}
 
         <!-- DECORATION METHOD — production stacked option list + charges table -->
         <div class="d-sec">
-          <h3 class="step-bar">Decoration Method</h3>
+          <h3 class="step-bar"><span class="n">3</span> Decoration Method</h3>
           <div class="method-list" role="radiogroup" aria-label="Select imprint method" id="dMethods"></div>
-          <span class="badge" id="dBadge">2 imprint colors</span>
+          <span class="badge" id="dBadge">2 Colors</span>
+          <div id="dIncluded"></div>
           <table class="charges">
             <caption class="sr">Decoration charges</caption>
             <thead><tr><th scope="col">Decoration Charges</th><th scope="col" class="r">Setup</th><th scope="col" class="r">Run Charge</th></tr></thead>
@@ -845,34 +875,21 @@ table.items tr.softrow td{color:var(--body)}
 
         <!-- IMPRINT DETAILS — production dashed box, native location select -->
         <div class="d-sec">
-          <h3 class="step-bar">Imprint Details</h3>
+          <h3 class="step-bar"><span class="n">4</span> Imprint Details</h3>
+          <div id="dPms"></div>
           <div class="imprint-box">
             <label class="lbl" for="dLoc">Imprint location</label>
             <select id="dLoc"></select>
             <p class="lbl" style="margin-top:14px">Imprint Colors</p>
             <div class="imprint-cost">
-              <span id="dImprintColors">2 colors</span>
+              <span id="dImprintColors">2 Colors</span>
               <span class="c">Imprint #1 cost: <b id="dImprintCost" style="color:var(--ink)">$60.00</b></span>
             </div>
           </div>
           <p class="provisional">Reconstruction, pending an import: this control is built from the 2026-09-03 production capture, not from the live component.</p>
         </div>
 
-        <!-- production subtotal box, captured 2026-09-03: "Subtotal with Setup Fee:" carries
-             base + setup + run, which is the same number the flow calls Total -->
-        <div class="d-subtotal" id="dSubBox">
-          <div>
-            <div style="color:var(--ink);font-weight:700">Subtotal with Setup Fee:</div>
-            <div class="sub" id="dSubMeta">250 pieces</div>
-            <button class="linkbtn" id="dDisc" aria-expanded="false" aria-controls="dDiscBody" style="margin-top:4px">See price breakdown</button>
-          </div>
-          <div style="text-align:right">
-            <div class="amt" id="dSubtotal">$692.50</div>
-            <div class="sub">Price each: <b id="dEach" style="color:var(--ink)">$2.18</b></div>
-          </div>
-        </div>
         <div class="disclose-body" id="dDiscBody"></div>
-
         <div id="dSpecialist" style="margin-top:16px"></div>
         <div id="dForm" style="margin-top:18px"></div>
         <p class="escape">Have a question first? <a href="#" onclick="return false">Talk to a specialist</a></p>
@@ -889,9 +906,12 @@ table.items tr.softrow td{color:var(--body)}
     <div class="modal-ft" id="dFooter">
       <div id="dNotices" aria-live="polite"></div>
       <div class="row">
-        <span class="k" id="dFootK">Total</span>
-        <span><span class="v" id="dFootV">$692.50</span><span class="ea" id="dFootEa">$2.18 each</span></span>
+        <span class="k" id="dFootK">Subtotal with Setup Fee:</span>
+        <span><span class="v" id="dFootV">$692.50</span><span class="ea" id="dFootEa">Price each: $2.18</span></span>
       </div>
+      <p class="disclose" style="margin:0 0 12px">
+        <button class="linkbtn" id="dDisc" aria-expanded="false" aria-controls="dDiscBody">View Price Breakdown</button>
+      </p>
       <button class="btn-primary sm" id="dSubmit">Get my quote</button>
       <p class="reason" id="dReason">Add your name and email to generate the quote</p>
       <p class="promise" id="dPromise">Priced now and locked for 30 days. The quote page and PDF go to your email.</p>
@@ -1007,7 +1027,7 @@ table.items tr.softrow td{color:var(--body)}
         <div class="q-sec">
           <h2 class="big">Del Mar Bamboo Stylus Pen</h2>
           <div class="q-kv" id="qConfig"></div>
-          <p class="q-note" id="qDefaultNote" style="display:none">This quote prices the default decoration: pad print, barrel, 1 imprint color.</p>
+          <p class="q-note" id="qDefaultNote" style="display:none">This quote prices the default decoration: pad printing, Back, 1 Color.</p>
         </div>
 
         <div class="q-sec">
@@ -1126,7 +1146,7 @@ table.items tr.softrow td{color:var(--body)}
     <!-- ACTION RAIL -->
     <div class="rail desk-rail">
       <div class="rail-card">
-        <div class="rail-total"><span class="k">Total</span><span class="v" id="qRailTotalV">$692.50</span></div>
+        <div class="rail-total"><span class="k">Total Price</span><span class="v" id="qRailTotalV">$692.50</span></div>
         <button class="btn-primary" id="qCta">Order this quote</button>
         <p class="reason" id="qCtaHelp">Restores this exact configuration at the quoted price</p>
         <p class="reason" id="qCountdown" style="display:none;font-weight:700;color:var(--amber-ink)"></p>
@@ -1161,7 +1181,7 @@ table.items tr.softrow td{color:var(--body)}
 
 <div class="mobile-bar mobile-only">
   <div class="top">
-    <div class="tot">Total <b id="qMobTotal">$692.50</b></div>
+    <div class="tot">Total Price <b id="qMobTotal">$692.50</b></div>
     <button class="btn-primary" id="qMobCta">Order this quote</button>
   </div>
 </div>
@@ -1324,13 +1344,21 @@ var COLORS = [
   {id:'black',   name:'Black barrel',   hex:'#111111'},
   {id:'white',   name:'White accent',   hex:'#F2F2F2'}
 ];
-var LOCS = {barrel:'Barrel', clip:'Clip', cap:'Cap'};
-/* maxColors 0 = a non-count idiom (full color), which switches the imprint-colors row wording */
+/* Location list and method names are production's, captured 2026-09-03. Production offers
+   the same location list to every method and RESETS the selection to the first option
+   whenever the method changes. */
+var LOC_ORDER = ['back','front-s','front-l','two','none'];
+var LOCS = {'back':'Back', 'front-s':'Front (small)', 'front-l':'Front (large)', 'two':'Two Sided', 'none':'No Imprint'};
+/* maxColors 0 = a non-count idiom (Full Color), which switches the Imprint Colors row wording */
 var METHODS = {
-  pad:    {name:'Pad print',   sub:'Up to 4 colors · 3 locations',  locs:['barrel','clip','cap'], maxColors:4, setup:60, run:0.35},
-  screen: {name:'Screen print', sub:'Up to 3 colors · 2 locations', locs:['barrel','cap'],        maxColors:3, setup:75, run:0.42},
-  laser:  {name:'Laser engraving', sub:'One color · 2 locations',   locs:['barrel','clip'],       maxColors:1, setup:45, run:0},
-  dyesub: {name:'Full-color dye sublimation', sub:'Full color · 1 location · quoted per job', locs:['barrel'], maxColors:0, setup:0, run:0, cfp:true}
+  pad:    {name:'Pad Printed',    prose:'pad printing',    sub:'Up to 4 colors · 5 locations',
+           maxColors:4, setup:60, run:0.35, extraSetup:60, extraRun:0.35},
+  screen: {name:'Screen Printed', prose:'screen printing', sub:'Up to 3 colors · 5 locations',
+           maxColors:3, setup:75, run:0.42, extraSetup:75, extraRun:0.42},
+  laser:  {name:'Laser Engraved', prose:'laser engraving', sub:'One color · first location included',
+           maxColors:1, setup:0, run:0, extraSetup:0, extraRun:1.25, firstFree:true},
+  dyesub: {name:'Full-Color Dye Sublimation', prose:'full-color dye sublimation', sub:'Full color · quoted per job',
+           maxColors:0, setup:0, run:0, cfp:true}
 };
 var MORDER = ['pad','screen','laser','dyesub'];
 var RATES = [
@@ -1340,7 +1368,7 @@ var RATES = [
 
 var S = {
   tab:'pdp', entry:'C', cfgComplete:true, submitted:false,
-  qty:250, color:'natural', method:'pad', loc:'barrel', colors:2,
+  qty:250, color:'natural', method:'pad', loc:'back', colors:2, pms:false,
   decorationTouched:true, ratesAvailable:true,
   notices:[],
   inst:{},
@@ -1363,20 +1391,34 @@ function isSpecialist(){ return S.qty > MAX_TIER || !!METHODS[S.method].cfp; }
 function colorName(){ return COLORS.filter(function(c){ return c.id === S.color; })[0].name; }
 function methodName(){ return METHODS[S.method].name; }
 function locName(){ return LOCS[S.loc]; }
-function colorsLabel(n, m){ return (m.maxColors === 0) ? 'Full Color' : (n === 1 ? '1 color' : n + ' colors'); }
+function noImprint(){ return S.loc === 'none'; }
+/* production's Imprint Colors row is a computed read-only label, in Title Case */
+function colorsLabel(){
+  var m = METHODS[S.method];
+  if (noImprint()) return 'None';
+  if (m.maxColors === 0) return 'Full Color';
+  return (S.colors === 1) ? '1 Color' : S.colors + ' Colors';
+}
+/* production's breakdown line 3: "Imprint 1 — Back, 1-color Screen Printed" */
+function imprintLine(){
+  var m = METHODS[S.method];
+  if (noImprint()) return 'No imprint';
+  return LOCS[S.loc] + ', ' + (m.maxColors === 0 ? 'full-color' : S.colors + '-color') + ' ' + m.name;
+}
 function price(){
   var m = METHODS[S.method], u = unitFor(S.qty), goods = u * S.qty;
-  var extra = (m.maxColors > 0) ? Math.max(0, S.colors - 1) : 0;
+  var extra = (!noImprint() && m.maxColors > 0) ? Math.max(0, S.colors - 1) : 0;
   var run = extra * m.run * S.qty;
-  return {unit:u, goods:goods, run:run, runEach:m.run, extra:extra, setup:m.setup, sub:goods + run + m.setup};
+  var setup = noImprint() ? 0 : m.setup;
+  return {unit:u, goods:goods, run:run, runEach:m.run, extra:extra, setup:setup, sub:goods + run + setup};
 }
 /* the quote is a locked artifact: it holds a snapshot, not a live read of the PDP */
 function snapshot(){
   var p = price(), m = METHODS[S.method];
-  return {qty:S.qty, color:colorName(), method:methodName(), loc:locName(),
-          colors:S.colors, colorsLabel:colorsLabel(S.colors, m), unit:p.unit, goods:p.goods,
-          run:p.run, runEach:p.runEach, extra:p.extra, setup:p.setup, sub:p.sub,
-          defaulted:!S.decorationTouched};
+  return {qty:S.qty, color:colorName(), method:methodName(), prose:m.prose, loc:locName(),
+          colors:S.colors, colorsLabel:colorsLabel(), imprintLine:imprintLine(), pms:S.pms,
+          unit:p.unit, goods:p.goods, run:p.run, runEach:p.runEach, extra:p.extra,
+          setup:p.setup, sub:p.sub, defaulted:!S.decorationTouched};
 }
 function qRate(){
   var d = S.quote.del;
@@ -1391,7 +1433,7 @@ function qTotal(){ var r = qRate(); return S.quote.cfg.sub + (r ? r.cost : 0); }
 var HELP = {
   pdp:'<b>View 1 &mdash; PDP.</b> The lead row sits above Add to cart. The "Quote entry" chips choose which modal the button opens; the "Configurator" chip demonstrates the disabled state with its reason.',
   modc:'<b>View 2 &mdash; Quote modal, Option C.</b> A 480px user-initiated modal over the scrimmed PDP. Nothing is editable: one configuration line, the total with its unit price, a breakdown disclosure, two fields, one CTA. "Change" returns to the PDP configurator.',
-  modd:'<b>View 3 &mdash; Quote modal, Option D.</b> 640px, pinned footer. Quantity, decoration method and imprint location are the production controls and re-price live; color and imprint colors are read-only. Try Laser engraving from the Cap location to see both dependency notices.',
+  modd:'<b>View 3 &mdash; Quote modal, Option D.</b> 640px, pinned footer, production step order 1&ndash;4. Quantity, decoration method and imprint location are the production controls and re-price live; color and imprint colors are read-only. Change the location, then change the method, to see production\'s own location reset announced.',
   quote:'<b>View 4 &mdash; Quote page.</b> Four document states, an unresolvable link, and the two optional modules: Calculate delivery and Add details. Both keep the quote number and stamp the document. Print runs the real print stylesheet.',
   pdf:'<b>View 5 &mdash; PDF.</b> A Letter-size preview of the print stylesheet applied to view 4, mirroring whatever module states are set there. "Print this now" runs it for real.',
   email:'<b>View 6 &mdash; Email.</b> The transactional message that carries the link and the attachment, in its initial and its re-sent form.'
@@ -1468,13 +1510,22 @@ function renderPDP(){
   $('pdpEach').textContent = fmt(p.unit);
   $('pdpSubtotal').textContent = fmt(p.sub);
   $('pdpSubMeta').textContent = num(S.qty) + ' pieces';
-  $('pdpRecap').textContent = colorName() + ' · ' + num(S.qty) + ' pieces';
+  $('pdpRecap').innerHTML = 'Color: <b>' + esc(colorName()) + '</b> &nbsp;&nbsp; Quantity: <b>' + num(S.qty) + '</b>';
   $('pdpMethod').textContent = m.name;
   $('pdpLoc').textContent = locName();
-  $('pdpColors').textContent = (m.maxColors === 0) ? 'full color' : (S.colors === 1 ? '1 imprint color' : S.colors + ' imprint colors');
-  $('pdpDecNote').textContent = m.setup > 0
-    ? 'One-time setup charge: ' + fmt(m.setup) + ' per location.' + (m.run > 0 ? ' Each imprint color past the first adds ' + fmt(m.run) + ' per piece.' : '')
-    : 'No setup charge for this decoration method.';
+  $('pdpColors').textContent = colorsLabel();
+  $('pdpDecNote').textContent = p.setup > 0
+    ? 'One-time setup charge: ' + fmt(p.setup) + ' per location.' + (m.run > 0 ? ' Each imprint color past the first adds ' + fmt(m.run) + ' per piece.' : '')
+    : 'First imprint included, so there is no setup charge for this decoration method.';
+  /* production exposes the PMS control on the PDP, not in the quote surface */
+  var pmsOK = m.maxColors > 0 && !noImprint();
+  $('pdpPmsHost').innerHTML = pmsOK
+    ? '<label class="cbx" for="pdpPms"><input type="checkbox" id="pdpPms"' + (S.pms ? ' checked' : '') +
+      '><span>I need an exact Pantone/PMS color match</span></label>' +
+      '<p class="note" style="margin-left:30px">$50.00 per color, applied at proofing.</p>'
+    : '';
+  if (pmsOK) $('pdpPms').addEventListener('change', function(){ S.pms = this.checked; renderAll(); });
+  else if (S.pms) S.pms = false;
   var dis = !S.cfgComplete;
   $('btnSample').disabled = dis; $('btnQuote').disabled = dis;
   $('leadHelper').textContent = dis ? 'Choose a product color to continue' : 'Priced now, good for 30 days';
@@ -1529,20 +1580,25 @@ function qtyValid(){ return S.qty >= MOQ; }
    D's footer disclosure and the quote document, so three surfaces
    showing one number cannot disagree.
    ============================================================ */
-function li(k, v, cls){ return '<div class="li' + (cls ? ' ' + cls : '') + '"><span class="k">' + k + '</span><span class="v">' + v + '</span></div>'; }
+function bdRow(lab, q, u, amt, cls){
+  return '<div class="bd-row' + (cls ? ' ' + cls : '') + '"><span class="lab">' + lab + '</span>' +
+    '<span class="q">' + (q || '') + '</span><span class="u">' + (u || '') + '</span>' +
+    '<span class="amt">' + (amt || '') + '</span></div>';
+}
+var FREE = '<span class="free">Free</span>';
+/* the production "Price breakdown" dialog, line for line (capture 2026-09-03) */
 function breakdownHTML(){
   var p = price(), m = METHODS[S.method], h = '';
-  h += li('<b>Del Mar Bamboo Stylus Pen, ' + num(S.qty) + ' pieces</b><span class="ea">' + esc(colorName()) + ' · ' + fmt(p.unit) + ' each</span>', fmt(p.goods));
-  if (p.run > 0) h += li('<b>Imprint run charge, ' + colorsLabel(S.colors, m) + '</b><span class="ea">' + fmt(p.runEach) + ' each</span>', fmt(p.run));
-  if (p.setup > 0) h += li('<b>One-time setup charge</b><span class="ea">' + esc(locName()) + '</span>' +
-      '<span class="tipwrap"><button class="tipbtn" aria-label="What the setup charge covers">' +
-      '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="4.8" r=".9" fill="currentColor"/></svg>' +
-      '</button><span class="tipbox">Covers preparing your artwork for this decoration method. Reorders of the same artwork skip it.</span></span>', fmt(p.setup));
-  h += li('<b>Subtotal</b>', fmt(p.sub), 'sub');
-  h += li('Shipping', 'Calculated at checkout', 'muted');
-  h += li('Sales tax', 'Added at checkout where applicable', 'muted');
-  h += li('<b>Total</b>', fmt(p.sub), 'tot');
-  h += '<p class="trust">This is the complete price. Only shipping and sales tax are added at checkout.</p>';
+  h += bdRow('Base Item Price', num(S.qty) + ' &times;', fmt(p.unit), fmt(p.goods));
+  h += bdRow('Decoration method: ' + esc(m.name), '', '', '', 'lo');
+  h += bdRow('<b>Imprint 1</b> &nbsp; ' + esc(imprintLine()), '', '', '', 'lo');
+  h += bdRow('Imprint Method Setup', '', '', p.setup > 0 ? fmt(p.setup) : FREE);
+  h += bdRow('Imprint Method Run Charge', p.run > 0 ? num(S.qty) + ' &times;' : '',
+             p.run > 0 ? fmt(p.runEach) : '', p.run > 0 ? fmt(p.run) : FREE);
+  if (S.pms) h += bdRow('Pantone/PMS color match', '', '', '<span class="free">Applied at proofing</span>', 'lo');
+  h += '<div class="bd-tot"><span class="k">Total Price</span><span class="v">' + fmt(p.sub) + '</span></div>';
+  h += '<div class="bd-avg"><span>Average price per unit</span><span>' + fmt(p.sub / S.qty) + ' per unit</span></div>';
+  h += '<p class="bd-foot">Taxes and delivery costs are not included. They will be calculated at checkout.</p>';
   return h;
 }
 function specialistHTML(){
@@ -1552,10 +1608,10 @@ function specialistHTML(){
   return '<div class="sp-block"><h3>This configuration needs a specialist</h3><p>' + reason + '</p></div>';
 }
 function echoHTML(){
-  var m = METHODS[S.method];
   return ro('Product', 'Del Mar Bamboo Stylus Pen') + ro('Quantity', num(S.qty) + ' pieces') +
          ro('Color', colorName()) + ro('Decoration method', methodName()) +
-         ro('Imprint location', locName()) + ro('Imprint colors', colorsLabel(S.colors, m));
+         ro('Imprint location', locName()) + ro('Imprint Colors', colorsLabel()) +
+         (S.pms ? ro('Pantone/PMS color match', 'Yes') : '');
 }
 function ro(k, v){ return '<div class="rorow"><span class="k">' + k + '</span><span class="v">' + esc(v) + '</span></div>'; }
 function bandHTML(cls, txt){
@@ -1569,13 +1625,13 @@ function bandHTML(cls, txt){
    ============================================================ */
 function renderC(){
   var m = METHODS[S.method], sp = isSpecialist();
-  var imprintPhrase = (m.maxColors === 0) ? 'full color'
-    : (S.colors === 1 ? '1 imprint color' : S.colors + ' imprint colors');
+  /* C-02, in production's own vocabulary: method name, location, Imprint Colors label */
   $('cSummary').innerHTML = '<b>Del Mar Bamboo Stylus Pen</b> · ' + esc(colorName()) + ' · ' + num(S.qty) +
-    ' pieces · ' + esc(methodName()) + ', ' + esc(locName().toLowerCase()) + ', ' + imprintPhrase;
+    ' pieces · ' + esc(methodName()) + ', ' + esc(locName()) + ', ' + esc(colorsLabel()) +
+    (S.pms ? ' · Pantone/PMS match' : '');
   /* the defaulted decoration is spelled out in words above the total, never left implicit */
   $('cNotice').innerHTML = S.decorationTouched ? '' : bandHTML('band-amber',
-    'This quote prices the default decoration: pad print, barrel, 1 imprint color. ' +
+    'This quote prices the default decoration: pad printing, Back, 1 Color. ' +
     '<button class="linkbtn" id="cNoticeChange">Change it on the product page</button>.');
   if ($('cNoticeChange')) $('cNoticeChange').addEventListener('click', backToConfigurator);
 
@@ -1583,7 +1639,7 @@ function renderC(){
   $('cPrice').style.display = sp ? 'none' : 'block';
   $('cSpecialist').innerHTML = sp ? specialistHTML() : '';
   $('cTotal').textContent = fmt(p.sub);
-  $('cEach').textContent = fmt(p.unit) + ' each';
+  $('cEach').textContent = fmt(p.unit);
   $('cDiscBody').innerHTML = breakdownHTML();
   $('cEcho').innerHTML = echoHTML();
   $('cMain').style.display = S.submitted ? 'none' : 'block';
@@ -1602,7 +1658,7 @@ function toggleDisc(btn, body){
 function renderD(){
   var m = METHODS[S.method], p = price(), sp = isSpecialist();
 
-  $('dRo').innerHTML = ro('Color', colorName()) + ro('Imprint Colors', colorsLabel(S.colors, m));
+  $('dRo').innerHTML = ro('Color', colorName());
 
   $('dTier').innerHTML = tierHTML();
   wireTier($('dTier'), function(){ renderAll(); announcePrice(); });
@@ -1620,34 +1676,43 @@ function renderD(){
   var mb = $('dMethods').querySelectorAll('.method-opt');
   for (var i=0;i<mb.length;i++) mb[i].addEventListener('click', function(){ changeMethod(this.dataset.m); });
 
-  $('dBadge').textContent = colorsLabel(S.colors, m);
-  var runTxt = m.run > 0 ? fmt(m.run) + ' / item' : 'Free';
-  $('dCharges').innerHTML =
-    '<tr><td>First Location</td><td class="r">' + (m.setup > 0 ? fmt(m.setup) : 'Free') + '</td><td class="r">' + runTxt + '</td></tr>' +
-    '<tr><td>Extra Location</td><td class="r">' + (m.setup > 0 ? fmt(m.setup) : 'Free') + '</td><td class="r">' + runTxt + '</td></tr>';
+  $('dBadge').textContent = colorsLabel();
+  /* the green-check note production shows for a method whose first imprint is included */
+  $('dIncluded').innerHTML = m.firstFree
+    ? '<div class="incl-note"><span>&#10003;</span><span><b>First imprint included</b> &mdash; one color, one location, no setup charge. ' +
+      'Add locations below &mdash; extras are priced separately.</span></div>'
+    : '';
+  function chg(v){ return v > 0 ? fmt(v) : FREE; }
+  $('dCharges').innerHTML = m.cfp
+    ? '<tr><td>First Location</td><td class="r">Quoted per job</td><td class="r">Quoted per job</td></tr>'
+    : '<tr><td>First Location</td><td class="r">' + chg(m.setup) + '</td><td class="r">' +
+        (m.run > 0 ? fmt(m.run) + ' / item' : FREE) + '</td></tr>' +
+      /* production prints Free (green) for an included first location and $0.00 for an extra one */
+      '<tr><td>Extra Location</td><td class="r">' + fmt(m.extraSetup) + '</td><td class="r">' +
+        (m.extraRun > 0 ? fmt(m.extraRun) + ' / item' : FREE) + '</td></tr>';
 
-  $('dLoc').innerHTML = m.locs.map(function(id){
+  /* production offers every location to every method; the list does not vary */
+  $('dLoc').innerHTML = LOC_ORDER.map(function(id){
     return '<option value="' + id + '"' + (S.loc === id ? ' selected' : '') + '>' + LOCS[id] + '</option>';
   }).join('');
-  $('dImprintColors').textContent = colorsLabel(S.colors, m);
-  $('dImprintCost').textContent = m.setup > 0 ? fmt(m.setup) : 'Free';
-
-  /* production's Subtotal: box stays goods-only, exactly as production defines the word */
-  $('dSubMeta').textContent = num(S.qty) + ' pieces';
-  $('dSubtotal').textContent = fmt(p.sub);
-  $('dEach').textContent = fmt(p.unit);
+  $('dImprintColors').textContent = colorsLabel();
+  $('dImprintCost').textContent = p.setup > 0 ? fmt(p.setup) : 'Free';
+  /* PMS is set on the PDP, never here; D only reports it */
+  $('dPms').innerHTML = S.pms
+    ? '<div class="pms-row"><span>&#10003;</span><span>Exact Pantone/PMS color match &mdash; $50.00 per color, applied at proofing. ' +
+      'Set on the product page.</span></div>'
+    : '';
 
   $('dNotices').innerHTML = S.notices.map(function(t){ return bandHTML('band-info', t); }).join('');
   if ($('dNoticeChange')) $('dNoticeChange').addEventListener('click', backToConfigurator);
 
   $('dSpecialist').innerHTML = sp ? specialistHTML() : '';
   $('dDiscBody').innerHTML = breakdownHTML();
-  $('dSubBox').style.display = sp ? 'none' : 'flex';
-  $('dDisc').style.display = sp ? 'none' : 'inline';
+  $('dDisc').parentNode.style.display = sp ? 'none' : 'block';
   if (sp){ $('dDiscBody').classList.remove('open'); $('dDisc').setAttribute('aria-expanded','false'); }
-  $('dFootK').textContent = sp ? 'Specialist quote' : 'Total';
+  $('dFootK').textContent = sp ? 'Specialist quote' : 'Subtotal with Setup Fee:';
   $('dFootV').textContent = sp ? '—' : fmt(p.sub);
-  $('dFootEa').textContent = sp ? '' : fmt(p.unit) + ' each';
+  $('dFootEa').textContent = sp ? '' : 'Price each: ' + fmt(p.unit);
   $('dEcho').innerHTML = echoHTML();
   $('dMain').style.display = S.submitted ? 'none' : 'block';
   $('dFooter').style.display = S.submitted ? 'none' : 'block';
@@ -1666,11 +1731,14 @@ function changeMethod(id){
   var mNew = METHODS[id], oldLoc = S.loc, oldColors = S.colors;
   S.method = id; S.notices = []; S.decorationTouched = true;
   setDecorationChip(true);
-  if (mNew.locs.indexOf(S.loc) < 0){
-    S.loc = mNew.locs[0];
-    /* D-20 */
-    S.notices.push(esc(mNew.name) + ' doesn\'t offer ' + esc(LOCS[oldLoc]) + '. Location changed to ' + esc(LOCS[S.loc]) + '.');
+  /* production discards the chosen location on every method change. D reproduces that,
+     but says so rather than letting the buyer discover it on the quote (D-20). */
+  if (S.loc !== LOC_ORDER[0]){
+    S.loc = LOC_ORDER[0];
+    S.notices.push(esc(mNew.name) + ' resets the imprint location. It changed from ' +
+      esc(LOCS[oldLoc]) + ' back to ' + esc(LOCS[S.loc]) + '.');
   }
+  if (mNew.maxColors === 0) S.pms = false;
   if (mNew.maxColors > 0 && oldColors > mNew.maxColors){
     S.colors = mNew.maxColors;
     /* D-21, with D-22 inside it */
@@ -1736,6 +1804,7 @@ function submit(k){
   S.quote.det = {added:false, company:'', phone:'', needby:''};
   S.quote.mail = 'first';
   syncQuoteChips();
+  renderQuoteAll();   /* the document, the PDF and the email all render from the new snapshot */
   closeModal();
   go('quote');
 }
@@ -1802,13 +1871,13 @@ document.addEventListener('keydown', function(e){
 });
 
 /* ---- PDP-view chips ---- */
-$('chipDecSet').addEventListener('click', function(){ setDecorationChip(true); S.colors = 2; S.method = 'pad'; S.loc = 'barrel'; S.qty = 250; S.notices = []; renderAll(); });
-$('chipDecDefault').addEventListener('click', function(){ setDecorationChip(false); S.colors = 1; S.method = 'pad'; S.loc = 'barrel'; S.notices = []; renderAll(); });
+$('chipDecSet').addEventListener('click', function(){ setDecorationChip(true); S.colors = 2; S.method = 'pad'; S.loc = 'back'; S.qty = 250; S.notices = []; renderAll(); });
+$('chipDecDefault').addEventListener('click', function(){ setDecorationChip(false); S.colors = 1; S.method = 'pad'; S.loc = 'back'; S.notices = []; renderAll(); });
 function priceChip(which){
   ['chipPriceOk','chipPriceQty','chipPriceMethod'].forEach(function(id){ $(id).classList.toggle('on', id === which); });
-  if (which === 'chipPriceOk'){ S.qty = 250; S.method = 'pad'; S.loc = 'barrel'; }
-  if (which === 'chipPriceQty'){ S.qty = 25000; S.method = 'pad'; S.loc = 'barrel'; }
-  if (which === 'chipPriceMethod'){ S.qty = 250; S.method = 'dyesub'; S.loc = 'barrel'; }
+  if (which === 'chipPriceOk'){ S.qty = 250; S.method = 'pad'; S.loc = 'back'; }
+  if (which === 'chipPriceQty'){ S.qty = 25000; S.method = 'pad'; S.loc = 'back'; }
+  if (which === 'chipPriceMethod'){ S.qty = 250; S.method = 'dyesub'; S.loc = 'back'; }
   S.notices = []; S.submitted = false;
   $('chipSubNo').classList.add('on'); $('chipSubYes').classList.remove('on');
   renderAll();
@@ -1846,37 +1915,44 @@ function preparedHTML(){
   if (d.added && d.needby) h += '<dt>Need-by date</dt><dd>' + shortDate(d.needby) + ', 2026</dd>';
   return h;
 }
-function configRows(tagOpen, tagClose){
+function configRows(){
   var c = S.quote.cfg;
-  return [['Product color', c.color], ['Quantity', num(c.qty) + ' pieces'],
-          ['Decoration method', c.method], ['Imprint location', c.loc], ['Imprint colors', c.colorsLabel]]
-    .map(function(r){ return '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('');
+  var rows = [['Product color', c.color], ['Quantity', num(c.qty) + ' pieces'],
+              ['Decoration method', c.method], ['Imprint location', c.loc], ['Imprint Colors', c.colorsLabel]];
+  if (c.pms) rows.push(['Pantone/PMS color match', 'Yes, applied at proofing']);
+  return rows.map(function(r){ return '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join('');
 }
+/* the quote table, the PDF and the email all use production's Price-breakdown labels */
 function itemRows(labelled){
   var c = S.quote.cfg, r = qRate(), h = '';
   function L(x){ return labelled ? ' data-l="' + x + '"' : ''; }
-  h += '<tr><td class="item">Del Mar Bamboo Stylus Pen<span class="m">' + esc(c.color) + '</span></td>' +
+  h += '<tr><td class="item">Base Item Price<span class="m">Del Mar Bamboo Stylus Pen &middot; ' + esc(c.color) + '</span></td>' +
        '<td class="r"' + L('Qty') + '>' + num(c.qty) + ' pieces</td><td class="r"' + L('Unit price') + '>' + fmt(c.unit) + '</td>' +
        '<td class="r"' + L('Amount') + '>' + fmt(c.goods) + '</td></tr>';
-  if (c.run > 0) h += '<tr><td class="item">Imprint run charge<span class="m">' + esc(c.method) + ', ' + esc(c.loc.toLowerCase()) + ', ' + esc(c.colorsLabel.toLowerCase()) + '</span></td>' +
-       '<td class="r"' + L('Qty') + '>' + num(c.qty) + ' pieces</td><td class="r"' + L('Unit price') + '>' + fmt(c.runEach) + '</td>' +
-       '<td class="r"' + L('Amount') + '>' + fmt(c.run) + '</td></tr>';
-  if (c.setup > 0) h += '<tr><td class="item">One-time setup charge<span class="m">' + esc(c.loc) + '</span></td>' +
-       '<td class="r"' + L('Qty') + '>1</td><td class="r"' + L('Unit price') + '>' + fmt(c.setup) + '</td>' +
-       '<td class="r"' + L('Amount') + '>' + fmt(c.setup) + '</td></tr>';
-  h += '<tr class="sub"><td class="item" colspan="3">Subtotal</td><td class="r"' + L('') + '>' + fmt(c.sub) + '</td></tr>';
+  h += '<tr class="softrow"><td class="item" colspan="4">Decoration method: ' + esc(c.method) + '</td></tr>';
+  h += '<tr class="softrow"><td class="item" colspan="4">Imprint 1 &mdash; ' + esc(c.imprintLine) + '</td></tr>';
+  h += '<tr><td class="item">Imprint Method Setup</td><td class="r"' + L('Qty') + '>' + (c.setup > 0 ? '1' : '') + '</td>' +
+       '<td class="r"' + L('Unit price') + '>' + (c.setup > 0 ? fmt(c.setup) : '') + '</td>' +
+       '<td class="r"' + L('Amount') + '>' + (c.setup > 0 ? fmt(c.setup) : 'Free') + '</td></tr>';
+  h += '<tr><td class="item">Imprint Method Run Charge</td><td class="r"' + L('Qty') + '>' + (c.run > 0 ? num(c.qty) + ' pieces' : '') + '</td>' +
+       '<td class="r"' + L('Unit price') + '>' + (c.run > 0 ? fmt(c.runEach) : '') + '</td>' +
+       '<td class="r"' + L('Amount') + '>' + (c.run > 0 ? fmt(c.run) : 'Free') + '</td></tr>';
+  if (c.pms) h += '<tr class="softrow"><td class="item" colspan="3">Pantone/PMS color match</td>' +
+       '<td class="r"' + L('') + '>Applied at proofing</td></tr>';
+  h += '<tr class="sub"><td class="item" colspan="3">Subtotal with Setup Fee</td><td class="r"' + L('') + '>' + fmt(c.sub) + '</td></tr>';
   h += r
     ? '<tr class="softrow"><td class="item" colspan="3">' + r.name + ' &middot; Arrives by ' + r.arrives + '</td><td class="r"' + L('Shipping') + '>' + fmt(r.cost) + '</td></tr>'
     : '<tr class="softrow"><td class="item" colspan="3">Shipping</td><td class="r"' + L('Shipping') + '>Calculated at checkout</td></tr>';
   h += '<tr class="softrow"><td class="item" colspan="3">Sales tax</td><td class="r"' + L('') + '>Added at checkout where applicable</td></tr>';
-  h += '<tr class="tot"><td class="item" colspan="3">Total</td><td class="r"' + L('') + '>' + fmt(qTotal()) + '</td></tr>';
+  h += '<tr class="tot"><td class="item" colspan="3">Total Price</td><td class="r"' + L('') + '>' + fmt(qTotal()) + '</td></tr>';
+  h += '<tr class="softrow"><td class="item" colspan="3">Average price per unit</td><td class="r"' + L('') + '>' + fmt(qTotal() / c.qty) + ' per unit</td></tr>';
   return h;
 }
 function termsHTML(){
   var c = S.quote.cfg;
   return ['Valid through Oct 3, 2026. The price above is honored at checkout until that date.',
     'Prices are in US dollars and exclude sales tax, which is added at checkout where applicable.',
-    'Pricing covers ' + esc(c.method.toLowerCase()) + ' on the ' + esc(c.loc.toLowerCase()) + ' in ' + esc(c.colorsLabel.toLowerCase()) + ', with one artwork setup. Extra locations, extra colors, and PMS color matching are priced separately.',
+    'Pricing covers ' + esc(c.prose) + ' on the ' + esc(c.loc.toLowerCase()) + ' in ' + esc(c.colorsLabel.toLowerCase()) + ', with one artwork setup. Extra locations, extra colors, and PMS color matching are priced separately.',
     'Artwork is uploaded at checkout. A free digital proof follows within 1 business day, and production starts after you approve it.',
     'Quantities may ship up to 5% over or under, and are billed as shipped.']
     .map(function(t){ return '<li>' + t + '</li>'; }).join('');
@@ -2132,12 +2208,19 @@ function renderMail(){
   $('mailFrom').innerHTML = 'PromotionPros &lt;quotes@promotionpros.com&gt; &middot; to dana@acme.com &middot; ' + (upd ? 'Sep 4' : 'Sep 3') + ', 2026';
   $('mailLede').textContent = upd
     ? 'Here\'s the updated quote for ' + num(c.qty) + ' Del Mar Bamboo Stylus Pens, with the delivery you added.'
-    : 'Here\'s your quote for ' + num(c.qty) + ' Del Mar Bamboo Stylus Pens, ' + c.method.toLowerCase() + ' in ' + c.colorsLabel.toLowerCase() + ' on the ' + c.loc.toLowerCase() + '.';
-  var rows = [['Quote','Q-48213'], ['Product','Del Mar Bamboo Stylus Pen'], ['Quantity', num(c.qty) + ' pieces'],
-              ['Decoration method', c.method], ['Imprint', c.loc + ', ' + c.colorsLabel.toLowerCase()],
-              ['Delivery', r ? r.name + ' · Arrives by ' + r.arrives : 'Calculated at checkout']];
+    : 'Here\'s your quote for ' + num(c.qty) + ' Del Mar Bamboo Stylus Pens, with ' + c.prose + ' on the ' + c.loc.toLowerCase() + ' in ' + c.colorsLabel.toLowerCase() + '.';
+  var rows = [['Quote', 'Q-48213'],
+              ['Base Item Price', num(c.qty) + ' × ' + fmt(c.unit) + ' = ' + fmt(c.goods)],
+              ['Decoration method', c.method],
+              ['Imprint 1', c.imprintLine],
+              ['Imprint Method Setup', c.setup > 0 ? fmt(c.setup) : 'Free'],
+              ['Imprint Method Run Charge', c.run > 0 ? num(c.qty) + ' × ' + fmt(c.runEach) + ' = ' + fmt(c.run) : 'Free']];
+  if (c.pms) rows.push(['Pantone/PMS color match', 'Applied at proofing']);
+  rows.push(['Subtotal with Setup Fee', fmt(c.sub)]);
+  rows.push(['Delivery', r ? r.name + ' · Arrives by ' + r.arrives : 'Calculated at checkout']);
   var h = rows.map(function(x){ return '<div class="r"><span class="k">' + x[0] + '</span><span class="v">' + esc(x[1]) + '</span></div>'; }).join('');
-  h += '<div class="r tot"><span class="k">Total</span><span class="v">' + fmt(qTotal()) + '</span></div>';
+  h += '<div class="r tot"><span class="k">Total Price</span><span class="v">' + fmt(qTotal()) + '</span></div>';
+  h += '<div class="r"><span class="k">Average price per unit</span><span class="v">' + fmt(qTotal() / c.qty) + ' per unit</span></div>';
   h += '<div class="r"><span class="k">Valid through</span><span class="v">Oct 3, 2026</span></div>';
   $('mailSum').innerHTML = h;
 }

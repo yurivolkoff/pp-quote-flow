@@ -28,6 +28,7 @@ Build the Instant Quote flow: a PDP lead-row entry, a lean request surface, the 
 3. **Option D is a 640px modal with a pinned footer**, editable quantity, decoration method and imprint location on production's own controls, colour and imprint colors read-only.
 4. **Company, phone, need-by and delivery are not on the request surface.** They are two optional modules on the quote page, open to any link holder, both keeping the quote number and adding a dated revision stamp.
 5. **No free-shipping strings.** The specialist fallback stays. Cart entry is specced in one paragraph below, not built.
+6. **Where the captured production labels conflict with the analysis document, production wins.** Applied in a second pass once the capture landed: the price vocabulary, the location list, the method names, the step numbering and the location-reset behaviour all come from production now, not from the analysis. What changed is listed under "What the production capture changed".
 
 ---
 
@@ -68,12 +69,19 @@ Switch between them with the **Quote entry** chips on view 1, then press "Get an
 
 ## What the production capture changed
 
-The capture section in `promotionpros-pdp.md` landed after C and the quote-page modules were built. Reading it against the analysis produced four corrections, all applied.
+The capture section in `promotionpros-pdp.md` landed after C and the quote-page modules were built. Reconciling against it, under the product-owner rule that captured production labels beat the analysis document, produced nine corrections. All are applied.
 
-1. **The subtotal box is not goods-only.** The analysis treated production's `Subtotal:` box as excluding setup and run charges, and built D's whole footer strategy around not redefining that word. The capture shows the multi-method product renders **`Subtotal with Setup Fee:`** carrying base + setup + run — `$330.25`, the same figure the breakdown dialog calls `Total Price`. D now uses the production label and the production number, which equals the flow's Total. The analysis' highest-risk reuse, two competing money figures in one modal, does not exist. The breakdown disclosure moved back into the box, which is where production puts it, and the footer carries the Total and the CTA only.
-2. **The imprint-location control is a `react-select` combobox**, not the swatch-style radiogroup the analysis assumed, and not a native `<select>` either. The prototype uses a native select as the closest static stand-in; the real build imports the component. Logged as a deviation and a Boris ask.
-3. **The method control is a `role="radiogroup"` of plain `<button aria-pressed>` cards**, hand-authored BEM (`imprint-method-card`), not Tailwind. Computed CSS reused verbatim: 8px radius, unselected `1px solid #EEEEEE` on white at `12px 16px`, selected `2px solid #FE5000` on `rgba(254,80,0,.05)` at `11px 15px`. The prototype had used `role="radio"` / `aria-checked` at a 4px radius; both are corrected.
-4. **Production silently resets the imprint location whenever the method changes**, even when the new method offers the old location — confirmed by the URL's `l=` param changing. D deliberately does not copy that: it keeps the location where the new method offers it, and where it cannot, it falls back and says so (`D-20`). That silent reset is precisely the failure `D-20` exists to prevent. Logged for Boris as an intended divergence.
+1. **The price vocabulary is production's, on every surface.** The flow had used the copy deck's `SH-51`–`SH-59` labels. It now uses the labels from production's own **Price breakdown** dialog, line for line: `Base Item Price` with `qty ×` and the unit price, the label-only rows `Decoration method: {Method}` and `Imprint 1 — {location}, {n}-color {Method}`, then `Imprint Method Setup` and `Imprint Method Run Charge`, a divider, `Total Price`, `Average price per unit`, and the footnote "Taxes and delivery costs are not included. They will be calculated at checkout." The quote page, the PDF and the email carry the same lines, with `Subtotal with Setup Fee` before the shipping row and `Total Price` after it.
+2. **The disclosure is `View Price Breakdown`**, production's own link label, not the deck's `See price breakdown`. Used in C, in D and on the PDP.
+3. **The collapsed summary uses `Subtotal with Setup Fee:` and `Price each:`.** These are production's short labels for the same figure the deck called Total. C's summary block and D's pinned footer both carry them, so the flow never invents a second word for a number production has already named.
+4. **The subtotal figure is not goods-only.** The analysis treated production's box as excluding setup and run charges and built D's footer strategy around not redefining that word. The capture shows `Subtotal with Setup Fee: $330.25`, identical to the dialog's `Total Price`. There is therefore one money figure in D, not two, and no reuse risk to mitigate. The separate in-flow subtotal box was dropped: the pinned footer **is** production's collapsed block.
+5. **The location list is production's**: `Back`, `Front (small)`, `Front (large)`, `Two Sided`, `No Imprint`, offered identically by every method. The mock product's own Barrel / Clip / Cap vocabulary is gone, and the deck strings that named "barrel" now name "Back".
+6. **Method names are production's**, in its past-participle Title Case: `Pad Printed`, `Screen Printed`, `Laser Engraved`, `Full-Color Dye Sublimation`. Running prose keeps a gerund form ("pad printing on the back"), because "Pricing covers Pad Printed on the back" is not a sentence.
+7. **Production resets the imprint location on every method change**, even when the new method offers the old one — confirmed by the URL's `l=` param changing. D now reproduces that reset rather than diverging from it, and announces it in the info band above the footer, which is the only part of the behaviour the flow adds.
+8. **The step numeral badges are back.** D runs production's own sequence: `1 Colors` (read-only), `2 Quantity`, `3 Decoration Method`, `4 Imprint Details`. The analysis had dropped the badges on the argument that "3" and "4" without "1" and "2" is incoherent; restoring all four resolves that rather than trading it away.
+9. **The controls themselves.** The method control is a `role="radiogroup"` of plain `<button aria-pressed>` cards, hand-authored BEM (`imprint-method-card`), not Tailwind — computed CSS reused verbatim at 8px radius, unselected `1px solid #EEEEEE` on white at `12px 16px`, selected `2px solid #FE5000` on `rgba(254,80,0,.05)` at `11px 15px`. The location control is a `react-select` combobox, reproduced as a native select. The `Imprint Colors` row is a read-only computed label, as built. Production's per-method `Decoration Charges` table with its `First Location` / `Extra Location` rows is reproduced, including the green-check "First imprint included" note for a method whose first location is free.
+
+**Also added from the capture:** the Pantone/PMS control. Production exposes it on the PDP, not in a quote surface, so the prototype puts the checkbox in the PDP's decoration step and reports it read-only in C, in D, and on the quote, the PDF and the email. The capture found that ticking it did not move the live subtotal, so it is priced at proofing rather than at configurator time, and the flow says so.
 
 ---
 
@@ -87,16 +95,15 @@ The capture section in `promotionpros-pdp.md` landed after C and the quote-page 
 ## Decisions where the analysis was silent
 
 1. **C has no pinned footer.** The analysis specced a pinned footer for D only. C runs under 500px tall, so its CTA sits in flow; at 375 it lands just at the fold rather than above it, which is the one place C is slightly worse than the inline panel the analysis preferred.
-2. **One breakdown string across the flow.** Production ships both "See price breakdown" (apron) and "View Price Breakdown" (tumbler) for the same control. The flow uses `C-06` "See price breakdown" everywhere, so C, D and the PDP agree. A Boris ask asks production to normalise.
-3. **The itemisation keeps the deck's labels, not production's breakdown-dialog labels.** Production's dialog says "Base Item Price", "Imprint Method Setup", "Imprint Method Run Charge", "Total Price", "Average price per unit". The flow uses `SH-51`–`SH-59`, which are also the quote page's, the PDF's and the email's labels. One of the two vocabularies should win before development; logged for Boris.
-4. **Method option names stay the flow's mock vocabulary.** Production's names are per-product data ("Laser Engraved", "Screen Printed"), not UI labels. The prototype keeps Pad print / Screen print / Laser engraving / Full-color dye sublimation, because six copy-deck strings and the terms line render from them.
-5. **The method card carries a one-line constraint summary** ("Up to 4 colors · 3 locations"). Production's card is name-only, because the constraints live in a Decoration & Imprint accordion that D does not have. Without it, D's clamp notices arrive unexplained.
-6. **Step numeral badges are dropped, the dark step bar is kept.** "3" and "4" without "1" and "2" is incoherent once D is not the four-step wizard, but the bar itself is a strong production idiom and holds the reused labels.
-7. **The chosen delivery option can be changed.** The analysis gives the delivery module a confirmation and a re-send but no way back. "Change delivery" returns to the options list; without it, a mis-picked service is a dead end on a document that stays live for 30 days.
-8. **The details revision stamp reads "Details added Sep 4, 2026"**, parallel to `QD-05`, which the deck defines only for delivery.
-9. **The email splits one row into two.** The initial email's single "Imprint" row becomes "Decoration method: Pad print" and "Imprint: Barrel, 2 colors", so the email obeys the same decoration/imprint rule as every other surface.
-10. **The tier curve, the method and location vocabularies, the rep contact details and the product image** are mock, carried from the R1 build.
-11. **The prototype's own chip rail floats above the scrim at 1280** so modal states stay switchable, and drops behind the full-screen sheet below 960px. Prototype scaffolding, not product.
+2. **One breakdown string across the flow.** Production ships both "See price breakdown" (apron) and "View Price Breakdown" (tumbler) for the same control. The flow uses `View Price Breakdown` everywhere, so C, D and the PDP agree. A Boris ask asks production to normalise.
+3. **The method card carries a one-line constraint summary** ("Up to 4 colors · 5 locations"). Production's card is name-only, because the constraints live in a Decoration & Imprint accordion that D does not have. Without it, D's clamp notices arrive unexplained.
+4. **The colour-count clamp above one colour needed a second string.** `D-21` is written for a method that prints in one colour. A method that clamps from four colours to three gets a parallel sentence in the same shape.
+5. **`No Imprint` is a real priced state.** Choosing it drops the setup and run charges to zero, sets `Imprint Colors` to `None`, and removes those lines from the breakdown, rather than quoting a decoration the buyer just declined.
+6. **The chosen delivery option can be changed.** The analysis gives the delivery module a confirmation and a re-send but no way back. "Change delivery" returns to the options list; without it, a mis-picked service is a dead end on a document that stays live for 30 days.
+7. **The details revision stamp reads "Details added Sep 4, 2026"**, parallel to `QD-05`, which the deck defines only for delivery.
+8. **The email carries the full breakdown**, not a short summary block, because the instruction was that the production breakdown lines appear on the quote page, the PDF and the email alike.
+9. **The tier curve, the per-method charges, the rep contact details and the product image** are mock, carried from the R1 build. The location list and the method names are no longer mock: both are production's.
+10. **The prototype's own chip rail floats above the scrim at 1280** so modal states stay switchable, and drops behind the full-screen sheet below 960px. Prototype scaffolding, not product.
 
 ---
 
@@ -117,11 +124,14 @@ The capture section in `promotionpros-pdp.md` landed after C and the quote-page 
 
 **View 2 — Quote modal (C).** Reads all five chips. "Change", the ✕, Escape and a backdrop click all close it; focus returns to the quote button and typed values survive. "See price breakdown" opens the itemisation.
 
-**View 3 — Quote modal (D).** Same chips plus live controls:
+**View 3 — Quote modal (D).** Production's step order, 1 Colors through 4 Imprint Details, with steps 2, 3 and 4 live:
 - Quantity: click a tier column, or type. Under 100 → `SH-22`. Over 10,000 → specialist state mid-edit.
-- Decoration method: four cards. **Laser engraving from the Cap location fires both dependency notices at once** — location falls back to Barrel (`D-20`) and the imprint-color count clamps from 2 to 1 with the run charge removed (`D-21`, carrying `D-22` back to the PDP).
-- Imprint location: the options list reloads per method.
-- Full-color dye sublimation is the call-for-pricing trigger.
+- Decoration method: four cards. **Change the location to Front (large), then pick Laser Engraved, and both dependency notices fire at once** — production discards the chosen location on any method change, so it returns to Back, and laser prints in one colour, so the count clamps from 2 to 1 and the run charge is removed (`D-21`, carrying `D-22` back to the PDP).
+- Laser Engraved also shows production's green-check "First imprint included" note and its Free / Free first-location charges.
+- Imprint location: the same five options for every method, as production offers them.
+- `No Imprint` zeroes the setup and run charges and sets Imprint Colors to None.
+- Full-Color Dye Sublimation is the call-for-pricing trigger.
+- **Pantone/PMS** is ticked on the PDP, in the decoration step, exactly where production puts it. D then reports it read-only, and it flows to the quote, the PDF and the email. It is priced at proofing, not at configurator time.
 
 **View 4 — Quote page**
 - Quote state: Valid / Expiring / Expired / Ordered / Invalid link
@@ -147,7 +157,7 @@ Rows re-run after the R3 changes are marked **(re-run)**.
 | B-PDP013 | Price per unit alongside total | Pass (re-run) | "$2.18 each" beside every total: C's total line, D's footer and subtotal box, the breakdown, the quote table, the PDF. |
 | B-PDP015 | Shipping estimate available pre-checkout | Pass (re-run) | Delivery moved to the quote page but is still available before any order, with a real cost and arrival date. |
 | B-PDP017 | Free-shipping status near the buy section | N/A | No threshold exists on production. Re-test when Boris supplies a live value. |
-| B-PDP019 | Colour swatches, not drop-downs | Pass with exception (re-run) | Product colour is a 44px swatch radiogroup. Imprint location is a drop-down in D — because production itself ships a `react-select` combobox for it. Reusing production's control is the instruction; inventing a swatch picker for it would be the divergence the reuse map forbids. |
+| B-PDP019 | Colour swatches, not drop-downs | Pass with exception (re-run) | Product colour is a 44px swatch radiogroup. Imprint location is a drop-down in D — because production itself ships a `react-select` combobox for it, with the five options reused verbatim. Reusing production's control is the instruction; inventing a swatch picker for it would be the divergence the reuse map forbids. |
 | B-PDP027 / F-PDP008 | No site-initiated overlays | Pass (re-run) | Both modals open only from the quote button. The ban covers site-initiated overlays. |
 | B-PDP038 | Buy section stays focused | Pass | The lead row adds two buttons and one helper line. |
 | B-PDP039 | Delivery dates, not speeds | Pass | "Arrives by Thu, Sep 24, 2026" everywhere. No "3–5 business days" string exists in the file. |
@@ -197,12 +207,11 @@ Rows re-run after the R3 changes are marked **(re-run)**.
 3. **Disabled CTA is `#DCDCDC` / `#6C6C6C`**, about 3.6:1 — below the body-text floor and intentional: WCAG 1.4.3 exempts disabled controls, and the reason line beneath carries the actionable information at 7.4:1.
 4. **D's imprint-location control is a native `<select>`.** Production ships a `react-select` combobox with hashed class names; a static prototype cannot import it. The visible label, the option list and the behaviour match.
 5. **D's decoration-method cards are a reconstruction** of production's hand-authored `imprint-method-card` BEM component. Computed colours, borders, radius and padding are verbatim from the capture; the class names are not. Both controls carry a visible "reconstruction, pending an import" note in the prototype.
-6. **D does not preserve production's silent location reset on method change.** Deliberate — see "What the production capture changed", item 4.
-7. **Production's step numeral badges and step checkmarks are dropped**, the dark step bar and its labels are kept.
+6. **D reproduces production's location reset on method change, and announces it.** Production performs the reset silently; the notice is the only addition.
+7. **Production's step checkmarks are dropped**, the numeral badges and the dark step bar are kept.
 8. **The "Add Additional Imprint Location" control is not built.** Multi-location quoting is out of scope for this round; production exposes it and it was not exercised in the capture either.
-9. **The Pantone/PMS checkbox that production shows for screen print is not built.** The capture could not confirm whether it changes the price at configurator time.
-10. **The flow's itemisation labels are the copy deck's, not production's breakdown-dialog labels.** See "Decisions where the analysis was silent", item 3.
-11. **The shipping-option rows are mock.** See amendment 2.
+9. **The Pantone/PMS checkbox is exposed for every spot-colour method, not only for Screen Printed.** Production showed it under Screen Printed on the captured product and listed the same $50-per-colour charge in Laser Engraved's read-only accordion. Whether that is a per-product difference or a gap is unresolved; the prototype shows it wherever a colour count exists, which is the more consistent reading.
+10. **The shipping-option rows are mock.** See amendment 2.
 12. **The "Chat with us" fallback button is navy outline, not orange outline** as captured. Orange text at 14px is 3.3:1 on white; navy is 15.9:1.
 13. **Product imagery is an inline SVG placeholder**, so the file stays self-contained.
 14. **Annotation dots exist only on the PDP lead row.** Every other view carries a legend, and each modal carries its own legend beside the dialog at 1100px and wider.
@@ -213,11 +222,12 @@ Rows re-run after the R3 changes are marked **(re-run)**.
 
 1. **C or D.** The analysis recommends C and names the instrumentation that would let D earn its build: `quote_change_clicked` on "Change", with roughly 15% of opens returning to the PDP as the threshold. Both are built and comparable.
 2. **Free-shipping threshold.** None exists on production as of 2026-09-03. Three copy strings and one delivery row depend on the answer and are currently absent.
-3. **Which itemisation vocabulary wins** — the copy deck's `SH-51`–`SH-59`, used across the modal, the quote page, the PDF and the email, or production's breakdown-dialog labels. They cannot both be right.
+3. **The location list and the method names now come from the captured tumbler, not from the pen the rest of the mock describes.** Applying the production labels flow-wide, as instructed, means a bamboo pen is quoted with Back / Front (small) / Front (large) / Two Sided locations. The vocabulary demonstration is right; the product fit is not. Either the mock product changes to a tumbler, or the location list becomes per-product data again. One line either way, but it should be a decision, not a leftover.
 4. **Whether the two modules should be open to any token holder.** Built open, per the analysis: the same token already authorises "Order this quote", so gating a phone number would be incoherent. Edits are date-stamped.
 5. **Named rep for anonymous viewers.** Both variants are behind a chip. The recommendation is a named rep only when the requester's email matches a HubSpot company with an owner.
 6. **Placeholder contact details** — Terry Alvarez, 312-555-0148, 800-555-0100 and the West Bend address block — need real values before anything ships.
-7. **The Pantone/PMS control and multi-location imprints** are production features this flow does not carry. Confirm they are out of scope for the quote.
+7. **Multi-location imprints** are a production feature this flow does not carry. Confirm "Add Additional Imprint Location" is out of scope for the quote.
+8. **Whether Pantone/PMS matching is chargeable at quote time.** It is currently shown on the quote as "applied at proofing" with no money attached, because that is what the capture observed. If the $50 per colour belongs on the quote, the line already exists and needs only a value.
 
 ---
 
@@ -230,12 +240,14 @@ New in R3:
 1. **One shared configurator state store.** The PDP and D must read and write the same state, not two copies. The capture confirms production already keeps it in the URL: `?c=BLUE&s=Default+Size:25&im=Laser+Engraved&l=<encoded>`. Extend that scheme with the imprint-colour count and let D write to it, so the PDP re-renders from it on close.
 2. **D imports the PDP's controls; it does not copy their markup.** The price-tier table, the `imprint-method-card` radiogroup and the `react-select` location control must ship as importable components. Copied markup is exactly the divergence D exists to prevent, and it is the reason two of D's controls carry a visible "reconstruction" note.
 3. **Production silently resets the imprint location when the decoration method changes.** Confirmed on the tumbler: a location chosen under one method is discarded, and the URL's `l=` param changes. Please make the reset announce itself on the PDP too, the way `D-20` does in the quote flow.
-4. **Normalise the PDP's own label inconsistencies.** `Imprint Colors` sits beside `Imprint location`; `Subtotal:` on one product is `Subtotal with Setup Fee:` on another; `See price breakdown` on one is `View Price Breakdown` on another. The flow inherits whichever it reuses.
+4. **Normalise the PDP's own label inconsistencies.** `Imprint Colors` sits beside `Imprint location`; `Subtotal:` on one product is `Subtotal with Setup Fee:` on another; `See price breakdown` on one is `View Price Breakdown` on another. The flow standardises on the tumbler's strings; production should pick one set.
 5. **Fix the price-tier table clipping** at the right edge of the ~520px buy box, where the top quantity column is cut off.
 6. **Both quote-page modules must add a dated revision to the existing quote, never a new number.** Delivery and contact details are additive and leave the quoted goods price untouched. Only a configuration change issues a new number, carrying `V3-28` "Replaces quote Q-48213".
 7. **Both modules are open to any token holder**, including a forwarded approver, with no extra gate.
 8. **The PDF regenerates on every module save**, and its footer states its own generation date (`V4-06`) beside the always-current link. A module save sends no email on its own; `QD-04` re-sends the same template with an "Updated:" subject prefix.
-9. **Decide which itemisation vocabulary is canonical** before the breakdown is built twice — see Open items 3.
+9. **Confirm the Pantone/PMS pricing rule.** Ticking the box did not move the live subtotal in the capture, so the flow prices it at proofing. If the $50 per colour is meant to price at configurator time, the quote and the PDF need the value.
+10. **Confirm whether the PMS control belongs to every spot-colour method or only to Screen Printed.** The captured product showed it under Screen Printed only, while listing the same charge in Laser Engraved's accordion.
+11. **Serialize the full configurator state in the URL.** Production already writes `?c=&s=&im=&l=`; the quote's "Order this quote" and "Need changes?" links replay that string, so it needs the imprint-colour count and the PMS flag added to it.
 
 ---
 
@@ -251,8 +263,13 @@ New in R3:
 | Delivery, reason under a disabled "Show delivery options" | Add the full address to check rates |
 | Delivery, same line once the address validates | Rates come from the same service checkout uses |
 | Delivery, live-region announcements | Delivery options ready. / No rates came back. |
-| D, method card sub-line | Up to 4 colors · 3 locations (and per method) |
+| D, method card sub-line | Up to 4 colors · 5 locations (and per method) |
+| D, location reset notice | {Method} resets the imprint location. It changed from {old} back to Back. |
+| D, first-imprint-included note | First imprint included — one color, one location, no setup charge. Add locations below — extras are priced separately. |
+| D, PMS read-only row | Exact Pantone/PMS color match — $50.00 per color, applied at proofing. Set on the product page. |
+| PDP, PMS helper | $50.00 per color, applied at proofing. |
 | D, colour-count clamp above one colour | {Method} prints in up to {N} colors. Imprint colors changed from {X} to {N}, and the run charge is recalculated. |
+| Quote, PDF and email | Pantone/PMS color match — Applied at proofing |
 | D, reconstruction note | Reconstruction, pending an import: this control is built from the 2026-09-03 production capture, not from the live component. |
 | D, unit-price tooltip | The unit price comes from the quantity break you selected above. |
 | Setup-charge tooltip | Covers preparing your artwork for this decoration method. Reorders of the same artwork skip it. |
@@ -263,7 +280,7 @@ New in R3:
 | Quote page, invalid-link recovery button | Back to promotionpros.com |
 | PDF sheet, section headings | Prepared for / Product and configuration / Terms |
 
-Carried from production verbatim, not written here: "Add to cart", "See price breakdown", "Have a product question? Ask us", "Secure Transaction", "Edit Color & Quantity", "Key Facts", "250 pieces", "Minimum Quantity", "Price per unit", "Quantity:", "Unit Price:", "Decoration Method", "Imprint Details", "Decoration Charges", "Setup", "Run Charge", "First Location", "Extra Location", "Imprint location", "Imprint Colors", "Imprint #1 cost:", "Subtotal with Setup Fee:", "Price each:", "Chat with us".
+Carried from production verbatim, not written here: "Add to cart", "View Price Breakdown", "Base Item Price", "Imprint Method Setup", "Imprint Method Run Charge", "Total Price", "Average price per unit", "Taxes and delivery costs are not included. They will be calculated at checkout.", "I need an exact Pantone/PMS color match", "Back", "Front (small)", "Front (large)", "Two Sided", "No Imprint", "Pad Printed", "Screen Printed", "Laser Engraved", "Have a product question? Ask us", "Secure Transaction", "Edit Color & Quantity", "Key Facts", "250 pieces", "Minimum Quantity", "Price per unit", "Quantity:", "Unit Price:", "1 Colors", "2 Quantity", "3 Decoration Method", "4 Imprint Details", "Decoration Charges", "Setup", "Run Charge", "First Location", "Extra Location", "Imprint location", "Imprint Colors", "Imprint #1 cost:", "Subtotal with Setup Fee:", "Price each:", "Chat with us".
 
 ---
 
@@ -285,3 +302,15 @@ Carried from production verbatim, not written here: "Add to cart", "See price br
   - QA at 1280 and 375 fixed four breaks found by screenshot: the modal annotation panels both displayed at once because `body.show-ann .ann-list` out-specified `.modal-ann{display:none}`; the annotation panels had no `top` and rendered off-screen; the prototype chip rail painted over the full-screen sheet at 375; and the sheet started under the sticky prototype bar. Print behaviour was verified by computed style against an always-on copy of the print stylesheet, not by eye.
   - Restored `SH-45`, dropped when the contact card was reduced to two fields (B-CHK025).
   - Added "Change delivery" so a chosen shipping option is not a dead end.
+- 2026-09-03 **R3b — second reconciliation pass against the production capture**, under the product-owner rule that captured production labels beat the analysis document.
+  - **Price vocabulary replaced flow-wide** with production's Price-breakdown lines: `Base Item Price`, `Decoration method: {Method}`, `Imprint 1 — {location}, {n}-color {Method}`, `Imprint Method Setup`, `Imprint Method Run Charge`, `Total Price`, `Average price per unit`, and production's footnote. Applied in C's disclosure, D's disclosure, the quote table, the PDF sheet and the email summary. The deck's `SH-51`–`SH-58` labels are retired.
+  - **`View Price Breakdown` replaces `See price breakdown`** in C, D and the PDP. **`Subtotal with Setup Fee:` and `Price each:`** replace the flow's own Total wording in C's summary block, D's pinned footer and the PDP box. The quote page's rail and mobile bar now read `Total Price`.
+  - **D restructured into production's four numbered steps** — `1 Colors` (read-only), `2 Quantity`, `3 Decoration Method`, `4 Imprint Details` — with the `Imprint Colors` read-only row moved under step 4 beside `Imprint #1 cost:`, where production puts it. The separate in-flow subtotal box was removed; the pinned footer is production's collapsed block.
+  - **Location list replaced** with production's `Back` / `Front (small)` / `Front (large)` / `Two Sided` / `No Imprint`, offered identically by every method. `No Imprint` zeroes the decoration charges. Every "barrel" string in the flow became "Back".
+  - **Method names replaced** with production's `Pad Printed` / `Screen Printed` / `Laser Engraved` / `Full-Color Dye Sublimation`, with a separate gerund form kept for running prose.
+  - **Location reset now matches production**: any method change discards the chosen location and returns to Back, with a notice. The earlier keep-where-possible divergence is reversed.
+  - **Per-method `Decoration Charges` reworked** to production's shape, including the green-check "First imprint included" note and Free / Free first-location charges for Laser Engraved against `$0.00` / `$1.25 per item` for an extra location.
+  - **Pantone/PMS added** as a PDP control, reported read-only in C, D, the quote, the PDF and the email, priced at proofing per the capture.
+  - Fixed a real bug found while testing the PMS path: submitting a quote never re-rendered the document, so the quote page, the PDF and the email kept showing the boot snapshot instead of the configuration just submitted.
+  - Mobile fix: the long production label made the pinned footer wrap mid-phrase at 375, so the footer row stacks below 960px.
+  - Print behaviour, console cleanliness and the full string audit re-verified after the rework.
