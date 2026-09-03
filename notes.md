@@ -44,7 +44,7 @@ Build the Instant Quote flow from `spec.md`: a PDP lead-row entry, two competing
 ## Two spec amendments applied (they override the spec)
 
 1. **No free-shipping threshold exists on production.** Neither the PDP, the cart, nor the checkout showed a threshold panel on the 2026-09-03 pass. Every free-shipping string is removed: `SH-60`, `SH-61`, and the `DEL-13` free row are not built. Shipping reads "Calculated at checkout" when delivery is not calculated, and sales tax reads "Added at checkout where applicable". **Open item for Yuri/Boris below.**
-2. **The live shipping-option rows could not be captured.** The production rate call returned "No delivery options found" for the test order, so the radio rows are built from the spec (service · cost · "Arrives by {date}") in the PDP system and are **mock, visually unverified against production**. The captured empty state is built as a reachable state, including production's own recovery line and chat fallback.
+2. **The live shipping-option rows could not be captured.** The production rate call returned "No delivery options found" for the test order, so the radio rows are built from the spec (service · cost · "Arrives by {date}") in the PDP system and are **mock, visually unverified against production**. The captured empty state is built as a reachable state, carrying the deck's `DEL-14` string plus production's own chat fallback.
 
 ---
 
@@ -153,10 +153,12 @@ Switch between them from the **Quote entry** chips on view 1, then press "Get an
 2. **Error message text is `#D70000`, not production's `#F80A0A`.** The production red gives 4.17:1 on white and fails the spec's own ≥4.5:1 floor. The 1px border stays `#F80A0A` verbatim, since non-text needs only 3:1.
 3. **Disabled CTA is `#DCDCDC` / `#6C6C6C`**, not production's `rgba(179,179,179,.5)` on `#F5F5F5`, which is near-illegible. Called for by the spec; flagged for Boris.
 4. **The shipping-option rows are mock.** See amendment 2.
-5. **The "Chat with us" fallback button is navy outline, not orange outline** as captured on production. Orange text at 14px is 3.3:1 on white; navy is 15.9:1 and is the PDP system's own secondary style.
-6. **Product imagery is an inline SVG placeholder**, not a CDN photo, so the file stays self-contained with no external asset dependency.
-7. **The cart entry point (`V1-05`, `V1-06`) is specced but not prototyped**, per the spec's own scope note.
-8. **Annotation dots exist only on the PDP lead row**; the other views carry their annotations in the per-view legend, which holds more than a hover tooltip can.
+5. **The "Chat with us" fallback button is navy outline, not orange outline** as captured on production. Orange text at 14px is 3.3:1 on white; navy is 15.9:1 and is the PDP system's own secondary style. The button itself is kept rather than cut: production's own checkout renders a chat fallback in exactly this no-rates state, and PP runs Olark live chat sitewide, so it is an existing channel, not an invented one. The copy around it is now the deck's `DEL-14` string verbatim.
+6. **Disabled buttons are `#DCDCDC` on `#6C6C6C`, about 3.6:1.** That is below the 4.5:1 body-text floor, and it is intentional: WCAG 1.4.3 conventionally exempts disabled controls, and every disabled CTA here carries a reason line beneath it in `#525252` at 7.4:1, which is where the actionable information lives. Still a visible improvement on production's own disabled treatment.
+7. **The PDP keeps "pieces" while every other surface says "pcs".** Both PDP strings, the step recap and the subtotal box, are verbatim production wording. The rule applied was: production strings are not rewritten to match the flow, and every string the flow itself introduces uses "pcs".
+8. **Product imagery is an inline SVG placeholder**, not a CDN photo, so the file stays self-contained with no external asset dependency.
+9. **The cart entry point (`V1-05`, `V1-06`) is specced but not prototyped**, per the spec's own scope note.
+10. **Annotation dots exist only on the PDP lead row**; the other views carry their annotations in the per-view legend, which holds more than a hover tooltip can.
 
 ---
 
@@ -187,9 +189,49 @@ Switch between them from the **Quote entry** chips on view 1, then press "Get an
 
 ---
 
+## Copy addendum — strings with no deck ID
+
+Every string below is written for the prototype and has no `spec.md` entry. Listed with its final text so the deck can absorb them.
+
+| Where | Final text |
+|---|---|
+| Quote page, first-arrival banner | Your quote is ready. We emailed a copy with the PDF to dana@acme.com. |
+| Delivery, rate-check button while loading | Checking rates… |
+| Delivery, reason under a disabled "Show delivery options" | Add the full address to check rates |
+| Delivery, same line once the address validates | Rates come from the same service checkout uses |
+| Delivery, live-region announcements | Delivery options ready. / No rates came back. |
+| Request page, imprint-location helper | Each location carries its own one-time setup charge |
+| Request page, per-location suffix | +$60.00 setup charge |
+| Request page, imprint-colors helper | Each color past the first adds $0.35 per piece |
+| Request page, product sub-line | SKU PP-DELMAR-BMB |
+| PDP, decoration-method note | One-time setup charge: $60.00 per location. Second imprint color adds $0.35 per piece. |
+| Rail, setup-charge tooltip trigger label | What the setup charge covers |
+| Quote page, note under "Message us about this quote" | Opens a message prefilled with "I have a question about quote Q-48213." |
+| Quote page, invalid-link recovery button | Back to promotionpros.com |
+| Quote page, enclosed-header title when the token is bad | Quote |
+| PDF sheet, section headings | Prepared for / Product and configuration / Terms |
+| PDF sheet, caption under the page | Letter, 8.5″ × 11″. Page 2 carries the terms and footer when page 1 overflows. The thumbnail renders at 150dpi minimum in the generated file. |
+
+Carried from production verbatim, not written here: "Add to cart", "See price breakdown", "Have a product question? Ask us", "Secure Transaction", "Edit color & quantity", "Key Facts", "250 pieces", "Minimum Quantity", "Price per unit", "Chat with us".
+
+---
+
 ## Change Log
 
 - 2026-09-03 Initial prototype. Six views, both request-surface options, four quote states across two delivery variants, print stylesheet, email mock.
 - 2026-09-03 Removed every free-shipping string per amendment 1; shipping and tax lines now always name where they are added.
 - 2026-09-03 Built the delivery options list from the spec and the captured empty state as a reachable toggle, per amendment 2.
 - 2026-09-03 QA pass at 1280 and 375: fixed the label selector losing its weight on non-`<label>` elements, the dialog header clipped by the prototype chrome, the crushed mobile header, duplicated labels in the stacked line-item table, run-together shipping-option rows, the PDF footer overlapping the last term, and a stale shipping line that survived an empty rate response.
+- 2026-09-03 **R2, from the UI-consistency and copy reviews.**
+  - Validation error text now matches the live checkout pattern at 15px weight 400. The darkened red stays.
+  - The quote page's Total moved into the action rail directly above "Order this quote", mirroring the email view. Price and primary action are now visible together at 1280 and at 375.
+  - The weight-900 tier is gone everywhere, including from the font request. Production Lato ships 400 and 700; hierarchy now comes from size alone.
+  - The PDP "Ask us" row carries the "Secure Transaction" trust marker again, as production does.
+  - Disabled-button contrast left as specced, with the exemption written into Known Deviations.
+  - `DEL-14` is the deck string verbatim. The invented "Still stuck?" sentence is deleted; the chat button stays, with its rationale recorded.
+  - The rail's first line item leads with the product name, per `SH-51`; the colour moved to the sub-line, which matters once the specced cart mode renders one line per product.
+  - The no-rep specialist card leads with the deck's "Talk to a specialist" heading, parallel to the named-rep card. The invented heading is gone.
+  - Terminology: "setup charge" everywhere, "pcs" on every string the flow introduces. Production's own "pieces" is left alone on the PDP.
+  - Four curly apostrophes replaced with straight ones.
+  - `V3-27` is now reachable as an "Invalid link" state chip, which also blanks the quote number from the enclosed header.
+  - Also found and fixed in passing: British spellings in customer-facing copy. "Each colour past the first" is now "color".

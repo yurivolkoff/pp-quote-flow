@@ -15,7 +15,7 @@
 <title>PromotionPros — Instant Quote flow prototype</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    TOKENS — from design/library/promotionpros-pdp.md.
@@ -33,7 +33,7 @@
   --rule-strong:#D4D4D4;
   --swatch-rule:#EEEEEE;       /* ring-rule */
   --input-border:#CDCDCD;      /* checkout input border, carried forward */
-  --error:#F80A0A;             /* verbatim production border colour */
+  --error:#F80A0A;             /* verbatim production border color */
   --error-text:#D70000;        /* darkened for 5.4:1 text contrast — see notes.md */
   --info-ink:#0B4A8F; --info-bg:#EFF6FF; --info-rule:#B9D6F5;
   --amber-ink:#7A4A00; --amber-bg:#FFF6E5; --amber-rule:#E8C88A;
@@ -84,7 +84,7 @@ img{max-width:100%}
 
 .ann{display:none;position:absolute;z-index:60}
 body.show-ann .ann{display:inline-flex;align-items:flex-start}
-.ann .dot{width:22px;height:22px;border-radius:50%;background:#FFB12E;color:#14181D;font-size:11px;font-weight:900;
+.ann .dot{width:22px;height:22px;border-radius:50%;background:#FFB12E;color:#14181D;font-size:11px;font-weight:700;
   display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .ann .txt{display:none;background:#14181D;color:#E8EBEF;font-size:12.5px;line-height:1.45;padding:8px 11px;
   border-radius:4px;width:248px;margin-left:8px;font-weight:400}
@@ -108,7 +108,7 @@ body.show-ann .ann-list{display:block}
 .linkbtn:hover{text-decoration:none}
 .linkbtn.lg{font-size:14px}
 .step-h{display:flex;align-items:center;gap:8px;font-size:18px;line-height:24px;font-weight:700;color:var(--ink);margin-bottom:10px}
-.step-h .num{color:var(--orange);font-weight:900}
+.step-h .num{color:var(--orange);font-weight:700}
 
 .btn-primary{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;padding:12px 16px;
   background:var(--orange);color:#fff;border:0;border-radius:4px;font-size:20px;line-height:28px;font-weight:700;transition:background .15s}
@@ -139,7 +139,7 @@ input::placeholder{color:#8C8C8C}
 input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;border-color:var(--navy)}
 .field{margin-bottom:16px}
 .field.err input,.field.err select{border:1px solid var(--error)}
-.errmsg{display:none;font-size:13px;color:var(--error-text);margin-top:5px;font-weight:700}
+.errmsg{display:none;font-size:15px;color:var(--error-text);margin-top:5px;font-weight:400}
 .field.err .errmsg{display:block}
 .note{font-size:13px;color:var(--helper);margin-top:5px;line-height:1.45}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
@@ -174,8 +174,8 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
 /* enclosed header (B-CHK008), restyled into the PDP system */
 .site-head{background:#fff;border-bottom:1px solid var(--rule)}
 .site-head-in{max-width:1280px;margin:0 auto;padding:0 24px;height:94px;display:flex;align-items:center;gap:16px}
-.site-head .hd-title{flex:1;text-align:center;font-size:20px;font-weight:900;color:var(--ink)}
-.logo{flex:none;font-weight:900;font-size:20px;color:var(--navy);letter-spacing:-.01em;line-height:1.1}
+.site-head .hd-title{flex:1;text-align:center;font-size:20px;font-weight:700;color:var(--ink)}
+.logo{flex:none;font-weight:700;font-size:20px;color:var(--navy);letter-spacing:-.01em;line-height:1.1}
 .logo .o{color:var(--orange)}
 .logo .tag{display:block;font-size:9px;font-weight:400;color:var(--body);margin-top:1px}
 
@@ -196,7 +196,7 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
 .subtotal-box .sub{font-size:13px;color:var(--helper)}
 .recap{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;color:var(--body);margin-bottom:14px}
 .recap b{color:var(--ink)}
-.recap .num{color:var(--orange);font-weight:900}
+.recap .num{color:var(--orange);font-weight:700}
 .keyfacts{border:1px solid var(--rule);border-radius:6px;background:#fff;padding:16px 18px;margin-top:20px}
 .keyfacts h2{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:10px}
 .keyfacts li{font-size:14px;color:var(--body);margin-bottom:7px;padding-left:22px;position:relative;line-height:1.45}
@@ -207,6 +207,8 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
 .leadrow{position:relative;margin-bottom:12px}
 .leadrow .pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .leadrow .helper{font-size:13px;color:var(--helper);text-align:right;margin-top:6px}
+.askrow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:13.5px;color:var(--body)}
+.askrow .secure{display:inline-flex;align-items:center;gap:6px;color:var(--navy);font-weight:700}
 
 /* ============================================================
    V2A — request page + shared rail
@@ -216,7 +218,7 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
 .cfg-row1{display:flex;gap:14px;align-items:flex-start;padding-bottom:16px;border-bottom:1px solid var(--rule);margin-bottom:16px}
 .thumb{width:72px;height:72px;flex:none;border:1px solid var(--rule);border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .thumb.sm{width:56px;height:56px}
-.cfg-row1 .nm{font-size:16px;font-weight:900;color:var(--ink);line-height:1.35}
+.cfg-row1 .nm{font-size:16px;font-weight:700;color:var(--ink);line-height:1.35}
 .cfg-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}
 .cfg-grid .full{grid-column:1/-1}
 .locs{display:flex;flex-direction:column;gap:10px}
@@ -241,8 +243,8 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
 .li.muted .v{color:var(--body);font-weight:400;font-size:13.5px;text-align:right;white-space:normal}
 .li.sub{border-bottom:1px solid var(--rule-strong)}
 .rail-total{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:14px 0 4px}
-.rail-total .k{font-size:16px;font-weight:900;color:var(--ink)}
-.rail-total .v{font-size:24px;font-weight:900;color:var(--ink)}
+.rail-total .k{font-size:16px;font-weight:700;color:var(--ink)}
+.rail-total .v{font-size:24px;font-weight:700;color:var(--ink)}
 .trust{font-size:13px;color:var(--body);line-height:1.45;background:var(--gray-bg);border-radius:6px;padding:10px 12px;margin:12px 0 16px}
 .validity{font-size:13px;color:var(--helper);text-align:center;margin-top:10px}
 .escape{text-align:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--rule);font-size:13.5px;color:var(--body)}
@@ -254,10 +256,10 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
 
 /* specialist block */
 .sp-block{border:1px solid var(--rule-strong);border-radius:6px;padding:16px;margin-top:14px;background:var(--gray-bg)}
-.sp-block h3{font-size:16px;font-weight:900;color:var(--ink);margin-bottom:6px}
+.sp-block h3{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:6px}
 .sp-block p{font-size:14px;color:var(--body);line-height:1.5}
 .sp-confirm{border:1px solid var(--green-rule);background:var(--green-bg);border-radius:6px;padding:24px}
-.sp-confirm h2{font-size:22px;font-weight:900;color:var(--green-ink);margin-bottom:8px}
+.sp-confirm h2{font-size:22px;font-weight:700;color:var(--green-ink);margin-bottom:8px}
 .sp-confirm p{font-size:15px;color:#14532D;line-height:1.55;max-width:64ch}
 
 /* delivery block */
@@ -284,14 +286,14 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
 .modal{background:#fff;width:640px;max-width:100%;max-height:min(88vh,100%);border:1px solid var(--rule-strong);border-radius:6px;
   display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.3)}
 .modal-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--rule);flex:none}
-.modal-hd h2{font-size:20px;font-weight:900;color:var(--ink)}
+.modal-hd h2{font-size:20px;font-weight:700;color:var(--ink)}
 .modal-x{background:none;border:0;padding:6px;color:var(--body);line-height:0;border-radius:4px}
 .modal-x:hover{background:var(--gray-bg)}
 .modal-body{overflow-y:auto;padding:20px;flex:1 1 auto}
 .modal-ft{flex:none;border-top:1px solid var(--rule);padding:14px 20px;background:#fff}
 .modal-ft .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
-.modal-ft .row .k{font-size:15px;font-weight:900;color:var(--ink)}
-.modal-ft .row .v{font-size:22px;font-weight:900;color:var(--ink)}
+.modal-ft .row .k{font-size:15px;font-weight:700;color:var(--ink)}
+.modal-ft .row .v{font-size:22px;font-weight:700;color:var(--ink)}
 .rorow{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--rule);font-size:14px}
 .rorow:last-child{border-bottom:0}
 .rorow .k{color:var(--body)}
@@ -301,6 +303,10 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
    V3 — quote page
    ============================================================ */
 .q-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:32px;align-items:start;padding:20px 0 56px}
+.q-invalid{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:40px 28px;text-align:center}
+.q-invalid h1{font-size:22px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.q-invalid p{font-size:15px;color:var(--body);max-width:52ch;margin:0 auto}
+.q-invalid .btn-outline{margin-left:auto;margin-right:auto}
 .q-banner{border-left:4px solid var(--navy);background:#fff;padding:14px 16px;font-size:15px;color:var(--ink);border-radius:0 6px 6px 0;margin-bottom:20px;line-height:1.5}
 .q-banner.expiring{border-left-color:#B8860B;background:var(--amber-bg);color:var(--amber-ink)}
 .q-banner.expired{border-left-color:#8C8C8C;background:var(--gray-bg);color:var(--gray-ink)}
@@ -308,7 +314,7 @@ input:focus,select:focus{outline:2px solid var(--navy);outline-offset:-1px;borde
 .q-arrival{border-left:4px solid #12653A;background:var(--green-bg);color:var(--green-ink);padding:12px 16px;
   border-radius:0 6px 6px 0;margin-bottom:14px;font-size:14.5px;line-height:1.5}
 .q-doc{background:#fff;border:1px solid var(--rule);border-radius:6px;padding:28px}
-.q-ref h1{font-size:24px;line-height:32px;font-weight:900;color:var(--ink)}
+.q-ref h1{font-size:24px;line-height:32px;font-weight:700;color:var(--ink)}
 .q-meta{font-size:14px;color:var(--body);margin-top:4px}
 .q-meta .dot{margin:0 8px;color:var(--rule-strong)}
 .q-sec{margin-top:26px;padding-top:22px;border-top:1px solid var(--rule)}
@@ -325,7 +331,7 @@ table.items th{text-align:left;font-size:12.5px;font-weight:700;color:var(--body
 table.items th.r,table.items td.r{text-align:right;padding-right:0}
 table.items td{padding:11px 10px 11px 0;border-bottom:1px solid var(--rule);color:var(--ink);vertical-align:top}
 table.items td .m{display:block;font-size:13px;color:var(--body);font-weight:400;margin-top:2px}
-table.items tr.tot td{border-bottom:0;padding-top:16px;font-size:20px;font-weight:900}
+table.items tr.tot td{border-bottom:0;padding-top:16px;font-size:20px;font-weight:700}
 table.items tr.sub td{font-weight:700;border-bottom:1px solid var(--rule-strong)}
 table.items tr.softrow td{color:var(--body)}
 .q-doc.dim table.items,.q-doc.dim .q-kv dd{opacity:.6}
@@ -337,7 +343,8 @@ table.items tr.softrow td{color:var(--body)}
 .rail-actions .btn-ghost{flex-direction:column;gap:5px;font-size:12.5px;min-height:64px;padding:10px 4px;text-align:center;line-height:1.25}
 .spec-card{border:1px solid var(--rule);border-radius:6px;padding:16px;margin-top:16px;background:#fff}
 .spec-card h3{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:8px}
-.spec-card .who{font-size:15px;font-weight:900;color:var(--ink)}
+.spec-card h3.big{font-size:15px;margin-bottom:6px}
+.spec-card .who{font-size:15px;font-weight:700;color:var(--ink)}
 .spec-card p{font-size:13.5px;color:var(--body);line-height:1.5;margin-top:4px}
 .spec-card .btn-ghost{width:100%;margin-top:12px}
 .changes{margin-top:16px;padding-top:16px;border-top:1px solid var(--rule)}
@@ -356,7 +363,7 @@ table.items tr.softrow td{color:var(--body)}
 .sheet .runhd{display:flex;justify-content:space-between;font-size:11px;color:#555;border-bottom:1px solid #868686;padding-bottom:8px;margin-bottom:28px}
 .sheet .letterhead{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin-bottom:28px}
 .sheet .addrblock{font-size:11.5px;color:#444;line-height:1.6;text-align:right}
-.sheet h1{font-size:22px;font-weight:900;color:#111}
+.sheet h1{font-size:22px;font-weight:700;color:#111}
 .sheet .pmeta{font-size:12.5px;color:#444;margin-top:3px}
 .sheet .psec{margin-top:24px}
 .sheet .psec h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#444;margin-bottom:8px}
@@ -372,7 +379,7 @@ table.items tr.softrow td{color:var(--body)}
   display:flex;gap:16px;align-items:center;justify-content:space-between;font-size:11px;color:#444}
 .qr{width:64px;height:64px;flex:none}
 .watermark{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:none}
-.watermark span{transform:rotate(-28deg);font-size:76px;font-weight:900;color:rgba(0,0,0,.10);letter-spacing:.02em;white-space:nowrap}
+.watermark span{transform:rotate(-28deg);font-size:76px;font-weight:700;color:rgba(0,0,0,.10);letter-spacing:.02em;white-space:nowrap}
 .sheet.expired .watermark{display:flex}
 
 /* ============================================================
@@ -380,7 +387,7 @@ table.items tr.softrow td{color:var(--body)}
    ============================================================ */
 .mail-stage{padding:24px 0 56px;display:flex;flex-direction:column;align-items:center;gap:16px}
 .mail-chrome{width:680px;max-width:100%;background:#fff;border:1px solid var(--rule);border-radius:6px;padding:16px 20px}
-.mail-chrome .subj{font-size:17px;font-weight:900;color:var(--ink);line-height:1.4}
+.mail-chrome .subj{font-size:17px;font-weight:700;color:var(--ink);line-height:1.4}
 .mail-chrome .from{font-size:13px;color:var(--helper);margin-top:6px}
 .mail-chrome .pre{font-size:13.5px;color:var(--body);margin-top:8px;padding-top:8px;border-top:1px solid var(--rule)}
 .mail-body{width:600px;max-width:100%;background:#fff;border:1px solid var(--rule);border-radius:0;padding:32px}
@@ -391,7 +398,7 @@ table.items tr.softrow td{color:var(--body)}
 .mail-sum .r .k{color:#555}
 .mail-sum .r .v{color:#111;font-weight:700;text-align:right}
 .mail-sum .r.tot{background:#FAFAFA}
-.mail-sum .r.tot .v{font-size:17px;font-weight:900}
+.mail-sum .r.tot .v{font-size:17px;font-weight:700}
 .mail-btn{display:block;background:var(--orange);color:#fff;text-decoration:none;text-align:center;font-size:16px;
   font-weight:700;padding:0;line-height:44px;height:44px;border-radius:4px;margin:8px 0 18px}
 .mail-attach{display:flex;gap:10px;align-items:center;border:1px solid var(--rule);border-radius:4px;padding:10px 12px;font-size:13.5px;color:#333;margin-bottom:18px}
@@ -426,7 +433,7 @@ table.items tr.softrow td{color:var(--body)}
     border-top:1px solid var(--rule-strong);box-shadow:0 -4px 16px rgba(0,0,0,.10);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
   .mobile-bar .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .mobile-bar .tot{font-size:13px;color:var(--body)}
-  .mobile-bar .tot b{display:block;font-size:20px;font-weight:900;color:var(--ink)}
+  .mobile-bar .tot b{display:block;font-size:20px;font-weight:700;color:var(--ink)}
   .mobile-bar .btn-primary{width:auto;min-width:170px;font-size:17px;min-height:48px}
   .mobile-bar .expander{background:none;border:0;padding:6px 0 0;font-size:13px;color:var(--navy);font-weight:700;text-decoration:underline}
   .mobile-bar .sheetpanel{display:none;padding-top:10px;border-top:1px solid var(--rule);margin-top:10px;max-height:52vh;overflow:auto}
@@ -504,7 +511,7 @@ table.items tr.softrow td{color:var(--body)}
     <span class="proto-sep" style="background:var(--rule-strong)"></span>
     <span class="lbl">Configurator:</span>
     <button class="chip on" id="chipCfgOk">Complete</button>
-    <button class="chip" id="chipCfgNo">Colour not chosen</button>
+    <button class="chip" id="chipCfgNo">Color not chosen</button>
   </div>
 
   <div class="ann-list">
@@ -512,7 +519,7 @@ table.items tr.softrow td{color:var(--body)}
     <li><b>A1</b> — Lead row: "Get a free sample" and "Get an instant quote" as paired half-width navy outline buttons directly above Add to Cart. One visual tier, so the orange primary keeps its dominance (B-PDP010, B-CHK030). Navy on white is 15.9:1.</li>
     <li><b>A2</b> — Helper "Priced now, good for 30 days" sets the instant + locked expectation before the click, so nobody presses it expecting a rep callback.</li>
     <li><b>A3</b> — Switch the entry chip to Option B and press the quote button: the modal opens over this page, no navigation. Option A navigates to view 2.</li>
-    <li><b>A4</b> — Switch the configurator chip to "Colour not chosen": both lead buttons disable and name the missing thing (B-CHK031), rather than failing after the click.</li>
+    <li><b>A4</b> — Switch the configurator chip to "Color not chosen": both lead buttons disable and name the missing thing (B-CHK031), rather than failing after the click.</li>
     <li><b>A5</b> — The buy box is otherwise untouched production: numbered steps, 44px swatches, interactive tier table, orange 52px rounded CTA (B-PDP038 keeps the buy section focused).</li>
   </div>
 
@@ -575,7 +582,7 @@ table.items tr.softrow td{color:var(--body)}
       <div class="pdp-sec">
         <div class="step-h"><span class="num">3</span> Decoration Method</div>
         <p style="font-size:14.5px">Decoration method: <b style="color:var(--ink)">Pad print</b> &middot; Barrel &middot; 2 imprint colors</p>
-        <p class="note">One-time setup $60.00 per location. Second imprint color adds $0.35 per piece.</p>
+        <p class="note">One-time setup charge: $60.00 per location. Second imprint color adds $0.35 per piece.</p>
       </div>
 
       <div class="subtotal-box">
@@ -602,7 +609,12 @@ table.items tr.softrow td{color:var(--body)}
       </div>
 
       <button class="btn-primary">Add to cart</button>
-      <p style="font-size:13.5px;margin-top:10px;text-align:center;color:var(--body)">Have a product question? <a href="#" onclick="return false">Ask us</a></p>
+      <div class="askrow">
+        <span>Have a product question? <a href="#" onclick="return false">Ask us</a></span>
+        <span class="secure">
+          <svg width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true"><path d="M7 1l5 2v5c0 3.2-2.1 6-5 7-2.9-1-5-3.8-5-7V3l5-2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M4.6 8l1.7 1.7L9.5 6.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Secure Transaction</span>
+      </div>
     </div>
   </div>
 </div>
@@ -691,9 +703,9 @@ table.items tr.softrow td{color:var(--body)}
 
   <div class="ann-list">
     <span class="hd">View 2A &mdash; the editable request page. Everything here re-prices live.</span>
-    <li><b>A1</b> &mdash; The price is itemised and visible before any field is filled (B-PDP013, B-CHK005). The form is not a price gate, and the setup charge can never surprise anyone at checkout.</li>
-    <li><b>A2</b> &mdash; Every configuration control is editable and re-prices asynchronously; the rail dims to 40% with a progress bar under the heading and announces the new total (B-CHK031). Try changing quantity, imprint colours, or ticking a second location.</li>
-    <li><b>A3</b> &mdash; Switch the arrival chip to "From search": the default-imprint notice appears above the controls, before any price line, and the configuration drops to 1 imprint colour so the notice is true.</li>
+    <li><b>A1</b> &mdash; The price is itemized and visible before any field is filled (B-PDP013, B-CHK005). The form is not a price gate, and the setup charge can never surprise anyone at checkout.</li>
+    <li><b>A2</b> &mdash; Every configuration control is editable and re-prices asynchronously; the rail dims to 40% with a progress bar under the heading and announces the new total (B-CHK031). Try changing quantity, imprint colors, or ticking a second location.</li>
+    <li><b>A3</b> &mdash; Switch the arrival chip to "From search": the default-imprint notice appears above the controls, before any price line, and the configuration drops to 1 imprint color so the notice is true.</li>
     <li><b>A4</b> &mdash; Delivery is an optional checkbox, not a required step (B-PDP015). Unchecked, the quote says shipping is calculated at checkout. Checked, it gives an arrives-by date (B-CHK018, B-PDP039) with the cheapest option preselected (B-CHK017).</li>
     <li><b>A5</b> &mdash; One full-name field, one phone field, both patterns from Baymard (B-CHK022, B-CHK023); phone is optional and carries a visible reason. Privacy line closes the card (B-CHK025).</li>
     <li><b>A6</b> &mdash; Press "Get my quote" with the form empty: inline on-blur validation, red border, specific message adjacent to the field, nothing cleared (B-CHK012/013/014/015). The CTA stays disabled with a reason naming the next missing thing (B-CHK031).</li>
@@ -769,7 +781,7 @@ table.items tr.softrow td{color:var(--body)}
                 <option value="1">1 color</option><option value="2">2 colors</option>
                 <option value="3">3 colors</option><option value="4">4 colors</option>
               </select>
-              <p class="note">Each colour past the first adds $0.35 per piece</p>
+              <p class="note">Each color past the first adds $0.35 per piece</p>
             </div>
             <div class="field full">
               <span class="lbl" id="aLocLbl">Imprint location</span>
@@ -798,7 +810,7 @@ table.items tr.softrow td{color:var(--body)}
   </div>
 </div>
 
-<!-- mobile sticky bottom bar: total left, CTA right, chevron expands the itemisation -->
+<!-- mobile sticky bottom bar: total left, CTA right, chevron expands the itemization -->
 <div class="mobile-bar mobile-only" id="aMobileBar">
   <div class="top">
     <div class="tot">Total <b id="aMobTotal">$731.10</b></div>
@@ -917,6 +929,7 @@ table.items tr.softrow td{color:var(--body)}
     <button class="chip" data-qs="expiring">Expiring</button>
     <button class="chip" data-qs="expired">Expired</button>
     <button class="chip" data-qs="ordered">Ordered</button>
+    <button class="chip" data-qs="invalid">Invalid link</button>
   </div>
   <div class="state-chips" style="padding-top:6px">
     <span class="lbl">Delivery:</span>
@@ -933,12 +946,13 @@ table.items tr.softrow td{color:var(--body)}
   </div>
 
   <div class="ann-list">
-    <span class="hd">View 3 &mdash; the quote document. 4 states &times; delivery calculated or not.</span>
+    <span class="hd">View 3 &mdash; the quote document. 4 states &times; delivery calculated or not, plus an unresolvable link.</span>
     <li><b>A1</b> &mdash; The reference number is the h1, with a real issued date and a real expiry date. Never "subject to change" &mdash; procurement cannot cite a quote it cannot name.</li>
     <li><b>A2</b> &mdash; "Prepared for" names the requester, because the person reading this is often the approver the link was forwarded to.</li>
     <li><b>A3</b> &mdash; The expired state never silently re-prices: the table dims, a "prices as of" caption appears, and the CTA becomes "Get an updated quote" under a new number. PDF and print stay enabled so an old PDF still resolves.</li>
     <li><b>A4</b> &mdash; "Need changes?" reopens the PDP with the configuration restored and says out loud that a change produces a new quote number.</li>
     <li><b>A5</b> &mdash; Print calls the real print stylesheet: pressing Print anywhere in this prototype renders view 5. One template, so the page and the PDF cannot drift.</li>
+    <li><b>A7</b> &mdash; "Invalid link" answers a bad token with a recovery path and a phone number, never a bare 404.</li>
     <li><b>A6</b> &mdash; Every action carries a text label, never an icon alone; the line-item table is a real table with a caption and scoped headers, and stacks to label/value rows on mobile with no horizontal scroll.</li>
   </div>
 </div>
@@ -946,7 +960,7 @@ table.items tr.softrow td{color:var(--body)}
 <div class="site-head">
   <div class="site-head-in">
     <div class="logo">Promotion<span class="o">Pros</span><span class="tag">Put your brand on it.</span></div>
-    <div class="hd-title">Quote Q-48213</div>
+    <div class="hd-title" id="qHeadTitle">Quote Q-48213</div>
     <button class="linkbtn" onclick="go('pdp')">Back to promotionpros.com</button>
   </div>
 </div>
@@ -954,6 +968,12 @@ table.items tr.softrow td{color:var(--body)}
 <div class="wrap has-mobile-bar">
   <div class="q-grid">
     <div>
+      <!-- V3-27 — a bad token is answered, never returned as a bare 404 -->
+      <div class="q-invalid" id="qInvalid" role="status" style="display:none">
+        <h1>This quote link doesn't resolve</h1>
+        <p>Check the link, or call 800-555-0100 with the quote number.</p>
+        <button class="btn-outline" style="max-width:260px;margin-top:20px" onclick="go('pdp')">Back to promotionpros.com</button>
+      </div>
       <div class="q-arrival" id="qArrival" role="status">Your quote is ready. We emailed a copy with the PDF to dana@acme.com.</div>
       <div class="q-banner" id="qBanner" role="status">This quote is good through Oct 3, 2026. The price is honored at checkout until then.</div>
 
@@ -1009,6 +1029,7 @@ table.items tr.softrow td{color:var(--body)}
     <!-- ACTION RAIL -->
     <div class="rail desk-rail">
       <div class="rail-card">
+        <div class="rail-total" id="qRailTotal" style="padding:0 0 12px"><span class="k">Total</span><span class="v" id="qRailTotalV">$731.10</span></div>
         <button class="btn-primary" id="qCta">Order this quote</button>
         <p class="reason" id="qCtaHelp">Restores this exact configuration at the quoted price</p>
         <p class="reason" id="qCountdown" style="display:none;font-weight:700;color:var(--amber-ink)"></p>
@@ -1066,7 +1087,7 @@ table.items tr.softrow td{color:var(--body)}
   </div>
   <div class="ann-list">
     <span class="hd">View 4 &mdash; the PDF. Same content, no interactive affordances.</span>
-    <li><b>A1</b> &mdash; Black on white, no background fills, 1px rules. Nothing here depends on colour to be read, because this document gets photocopied and faxed into approval chains.</li>
+    <li><b>A1</b> &mdash; Black on white, no background fills, 1px rules. Nothing here depends on color to be read, because this document gets photocopied and faxed into approval chains.</li>
     <li><b>A2</b> &mdash; The footer carries the short link beside a QR to the same URL, so a paper copy still routes back to a live, orderable quote.</li>
     <li><b>A3</b> &mdash; The expired sheet carries a diagonal watermark, so a stale PDF sitting in an inbox cannot read as live pricing.</li>
     <li><b>A4</b> &mdash; "Print this now" runs the real @media print stylesheet against view 3. Try it from any view.</li>
@@ -1168,7 +1189,7 @@ table.items tr.softrow td{color:var(--body)}
     <span class="hd">View 6 &mdash; the email that carries the quote.</span>
     <li><b>A1</b> &mdash; The subject carries product, quantity and reference number. A buyer searching their inbox three weeks later finds it on any of the three.</li>
     <li><b>A2</b> &mdash; Both a link and an attachment: the buyer keeps the live link, the approver gets the forwardable PDF. The attachment line names that job out loud.</li>
-    <li><b>A3</b> &mdash; 600px single-column table layout, explicit background colours, no white-on-white logo &mdash; dark-mode safe in Outlook and Apple Mail.</li>
+    <li><b>A3</b> &mdash; 600px single-column table layout, explicit background colors, no white-on-white logo &mdash; dark-mode safe in Outlook and Apple Mail.</li>
   </div>
 </div>
 <div class="mail-stage">
@@ -1218,7 +1239,7 @@ table.items tr.softrow td{color:var(--body)}
 <script>
 /* ============================================================
    MOCK DATA — spec values kept verbatim so the prototype reads
-   as one order: 250 pcs @ $2.18, 2 colours, 1 location, $692.50
+   as one order: 250 pcs @ $2.18, 2 colors, 1 location, $692.50
    subtotal, FedEx Ground $38.60, $731.10 total, quote Q-48213.
    ============================================================ */
 var TIERS = [[100,2.68],[250,2.18],[500,1.98],[1000,1.79],[2500,1.64],[5000,1.52],[10000,1.44]];
@@ -1275,7 +1296,7 @@ var HELP = {
   pdp:'<b>View 1 &mdash; PDP.</b> The lead row sits above Add to Cart. Use the "Quote entry" chips to send the quote button to the full page (A) or the modal (B); the "Configurator" chip demonstrates the disabled state with its reason.',
   reqa:'<b>View 2 &mdash; Request page, Option A.</b> Everything in the configuration card is editable and re-prices live. Chips switch how the buyer arrived, whether the price needs a specialist, whether the rate API returns options, and the post-submit specialist confirmation.',
   reqb:'<b>View 3 &mdash; Request modal, Option B.</b> The same content over the PDP, with the configuration read-only and a "Change" affordance back to the product page. Total and CTA stay pinned in the footer. Esc or the backdrop closes it and keeps what you typed.',
-  quote:'<b>View 4 &mdash; Quote page.</b> Four states across two delivery variants, plus the first-arrival banner and named-rep toggles. Print runs the real print stylesheet and renders view 5.',
+  quote:'<b>View 4 &mdash; Quote page.</b> Four document states across two delivery variants, plus an unresolvable link, the first-arrival banner and the named-rep toggle. Print runs the real print stylesheet and renders view 5.',
   pdf:'<b>View 5 &mdash; PDF.</b> A Letter-size preview of the print stylesheet applied to view 4. "Print this now" runs it for real.',
   email:'<b>View 6 &mdash; Email.</b> The transactional message that carries the link and the attachment.'
 };
@@ -1473,9 +1494,8 @@ function renderDelivery(k){
        It offers recovery rather than a dead end: the buyer can untick delivery and continue. */
     host.innerHTML =
       '<div class="band band-err"><b>No rates came back for ' + esc(i.zip || '60614') +
-      '. Check the address, or leave delivery off and we’ll price shipping at checkout.</b>' +
-      '<p style="margin-top:8px;font-weight:400;color:#7A1616">Still stuck? Our team can quote a custom rate or help fix the address.</p>' +
-      '<button class="btn-ghost" style="margin-top:10px">' +
+      '. Check the address, or leave delivery off and we\'ll price shipping at checkout.</b>' +
+      '<button class="btn-ghost" style="margin-top:12px">' +
       '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 3.5h12v8H8.8L5.5 14v-2.5H2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>' +
       'Chat with us</button></div>';
     return;
@@ -1503,7 +1523,8 @@ function renderDelivery(k){
 function itemsHTML(k){
   var p = price(k), i = S.inst[k];
   var h = '';
-  h += li('<b>' + colorName() + ' · ' + S.qty.toLocaleString() + ' pcs</b><span class="ea">' + fmt(p.unit) + ' each</span>', fmt(p.line));
+  h += li('<b>Del Mar Bamboo Stylus Pen · ' + S.qty.toLocaleString() + ' pcs</b>' +
+          '<span class="ea">' + colorName() + ' · ' + fmt(p.unit) + ' each</span>', fmt(p.line));
   if (p.run > 0) h += li('<b>Imprint run charge, ' + S.colors + ' colors</b><span class="ea">' + fmt(RUN_PER_COLOR) + ' each</span>', fmt(p.run));
   h += li('<b>One-time setup charge</b><span class="ea">' + locNames() + '</span>' +
       '<span class="tipwrap"><button class="tipbtn" aria-label="What the setup charge covers">' +
@@ -1524,8 +1545,8 @@ function li(k, v){ return '<div class="li"><span class="k">' + k + '</span><span
 
 function specialistHTML(){
   var reason = (S.method === 'dyesub')
-    ? 'Full-color dye sublimation is quoted per job, so this one doesn’t price instantly.'
-    : 'Quantities above 10,000 are priced by hand, so this one doesn’t price instantly.';
+    ? 'Full-color dye sublimation is quoted per job, so this one doesn\'t price instantly.'
+    : 'Quantities above 10,000 are priced by hand, so this one doesn\'t price instantly.';
   return '<div class="sp-block"><h3>This configuration needs a specialist</h3><p>' + reason + '</p></div>';
 }
 function ctaState(k){
@@ -1543,7 +1564,7 @@ function ctaState(k){
 function renderAll(){
   var sp = isSpecialist();
   /* the default-imprint notice must be read before any price line */
-  var noticeA = S.showDefaultNotice ? band('This quote prices the default decoration: pad print, barrel, 1 imprint color. Change it below if it doesn’t match your job.') : '';
+  var noticeA = S.showDefaultNotice ? band('This quote prices the default decoration: pad print, barrel, 1 imprint color. Change it below if it doesn\'t match your job.') : '';
   var noticeB = S.showDefaultNotice ? band('This quote prices the default decoration: pad print, barrel, 1 imprint color. Change it on the product page.') : '';
   $('aNotice').innerHTML = noticeA; $('mNotice').innerHTML = noticeB;
 
@@ -1556,7 +1577,7 @@ function renderAll(){
   renderSwatches($('aSwatches'), function(){ renderPDP(); renderAll(); });
   $('aLocs').innerHTML = LOCS.map(function(l){
     return '<label class="loc-item"><input type="checkbox" value="' + l.id + '"' + (S.locs.indexOf(l.id) > -1 ? ' checked' : '') + '>' +
-      '<span>' + l.name + '</span><span class="setup">+' + fmt(SETUP_PER_LOC) + ' setup</span></label>';
+      '<span>' + l.name + '</span><span class="setup">+' + fmt(SETUP_PER_LOC) + ' setup charge</span></label>';
   }).join('');
   var lc = $('aLocs').querySelectorAll('input');
   for (var n=0;n<lc.length;n++) lc[n].addEventListener('change', function(){
@@ -1738,6 +1759,7 @@ document.addEventListener('keydown', function(e){
    V3 — quote page states
    ============================================================ */
 var QS = {
+  invalid: {cls:'', txt:'', cta:'', help:''},
   valid:   {cls:'', txt:'This quote is good through Oct 3, 2026. The price is honored at checkout until then.',
             cta:'Order this quote', help:'Restores this exact configuration at the quoted price'},
   expiring:{cls:'expiring', txt:'This quote expires in 4 days, on Oct 3, 2026. Order before then to keep this price.',
@@ -1748,7 +1770,13 @@ var QS = {
             cta:'View order W-10488', help:''}
 };
 function renderQuote(){
-  var st = QS[S.quote.state], del = S.quote.delivery;
+  var st = QS[S.quote.state], del = S.quote.delivery, bad = (S.quote.state === 'invalid');
+  $('qInvalid').style.display = bad ? 'block' : 'none';
+  ['qArrival','qBanner','qDoc'].forEach(function(id){ $(id).style.display = bad ? 'none' : ''; });
+  document.querySelector('#view-quote .desk-rail').style.display = bad ? 'none' : '';
+  document.querySelector('#view-quote .mobile-bar').style.display = bad ? 'none' : '';
+  $('qHeadTitle').textContent = bad ? 'Quote' : 'Quote Q-48213';
+  if (bad) return;
   $('qBanner').className = 'q-banner ' + st.cls;
   $('qBanner').textContent = st.txt;
   $('qCta').textContent = st.cta; $('qMobCta').textContent = st.cta;
@@ -1782,6 +1810,7 @@ function renderQuote(){
     '<tr class="tot"><td class="item" colspan="3">Total</td><td class="r" data-l="">' + (del ? '$731.10' : '$692.50') + '</td></tr>';
   $('qItems').innerHTML = rows;
   $('qMobTotal').textContent = del ? '$731.10' : '$692.50';
+  $('qRailTotalV').textContent = del ? '$731.10' : '$692.50';
   $('qTrust').textContent = del
     ? 'This is the complete price. Only sales tax is added at checkout.'
     : 'This is the complete price. Only shipping and sales tax are added at checkout.';
@@ -1794,10 +1823,13 @@ function renderQuote(){
     $('qSpecWho').textContent = 'Terry Alvarez';
     $('qSpecBody').innerHTML = '312-555-0148 <span class="dot">&middot;</span> terry@promotionpros.com';
   } else {
-    $('qSpecHd').textContent = 'Questions about this quote?';
-    $('qSpecWho').textContent = 'Talk to a specialist';
+    /* V3-19 is the heading, parallel to "Your specialist" — never a demoted sub-line */
+    $('qSpecHd').textContent = 'Talk to a specialist';
+    $('qSpecWho').textContent = '';
     $('qSpecBody').textContent = 'Call 800-555-0100, Monday to Friday, 8 am to 5 pm Central.';
   }
+  $('qSpecHd').classList.toggle('big', S.quote.rep !== 'named');
+  $('qSpecWho').style.display = (S.quote.rep === 'named') ? 'block' : 'none';
 }
 (function(){
   var c = document.querySelectorAll('[data-qs]');
